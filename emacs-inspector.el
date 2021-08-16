@@ -2,10 +2,30 @@
 
 (require 'cl)
 
+(defun princ-to-string (x)
+  (with-output-to-string
+    (princ x)))
+
 (cl-defgeneric inspect-object (object))
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
-  (debug "Inspect class %s" class))
+  (insert (format "Class: %s" (class-name class)))
+  (newline 2)
+  (insert "Direct superclasses: ")
+  (dolist (superclass (class-direct-superclasses class))
+    (emacs-inspector--insert-inspect-button
+     (class-name superclass) (class-name superclass))
+    (insert " "))
+  (newline)
+  (insert "Class slots: ")
+  (dolist (slot (eieio-class-slots class))
+    (insert (format "%s " (cl--slot-descriptor-name slot))))
+  (newline)
+  (insert "Direct subclasses:")
+  (dolist (subclass (class-direct-subclasses class))
+    (emacs-inspector--insert-inspect-button
+     (class-name subclass) (class-name subclass))
+    (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
   (debug "True"))
@@ -22,16 +42,16 @@
     (insert "Instance of ")
     (emacs-inspector--insert-inspect-button
      (class-of object)
-     (prin1-to-string (eieio-class-name (eieio-object-class object))))
+     (eieio-class-name (eieio-object-class object)))
     (newline 2)
-    (insert "Slots:")
+    (insert "Slot values:")
     (newline)
     (dolist (slot (eieio-class-slots (eieio-object-class object)))
       (insert (format "%s: " (cl--slot-descriptor-name slot)))
       (emacs-inspector--insert-inspect-button
        (slot-value object (cl--slot-descriptor-name slot)))
       (newline)))
-   (t (error "Cannot inspect object"))))
+   (t (error "Cannot inspect object: %s" object))))
 
 (defun plistp (list)
   (let ((expected t))
@@ -55,7 +75,8 @@
 (alistp '((a . 22) (b . "foo")))
 
 (defun emacs-inspector--insert-inspect-button (object &optional label)
-  (insert-button (or label (prin1-to-string object))
+  (insert-button (or (and label (princ-to-string label))
+		     (princ-to-string object))
                  'action (lambda (btn)
                            (emacs-inspector-inspect object))
                  'follow-link t))
