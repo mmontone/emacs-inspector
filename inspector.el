@@ -38,6 +38,19 @@
       (push (car cons) plist))
     plist))
 
+(defun inspector--insert-horizontal-line (&rest width)
+  (insert (make-string (or width 80) ?\u2500)))
+
+(defun inspector--insert-property (property-name)
+  (insert property-name)
+  (insert ": "))
+
+(defun inspector--insert-title (title)
+  (insert title)
+  (newline)
+  (inspector--insert-horizontal-line)
+  (newline))
+
 (defun inspector--proper-list-p (val)
   "Is VAL a proper list?"
   (if (fboundp 'format-proper-list-p)
@@ -125,7 +138,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
           (inspector--insert-inspect-button value))
         (newline))))
    ((inspector--proper-list-p cons)
-    (insert "Proper list:")
+    (insert "Proper list")
+    (newline)
+    (inspector--insert-horizontal-line)
     (newline)
     (let ((i 0))
       (dolist (elem cons)
@@ -158,10 +173,17 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (newline))))
 
 (cl-defmethod inspect-object ((buffer buffer))
-  (debug "Inspect buffer"))
+  (insert "Buffer")
+  (newline)
+  (inspector--insert-horizontal-line)
+  (newline)
+  (inspector--insert-property "Name")
+  (inspector--insert-inspect-button (buffer-name buffer)))
 
 (cl-defmethod inspect-object ((number number))
-  (debug "Inspect number"))
+  (inspector--insert-title (princ-to-string (type-of number)))
+  (inspector--insert-property "Value")
+  (insert (princ-to-string number)))
 
 (cl-defmethod inspect-object ((integer integer))
   (insert "Integer: ")
