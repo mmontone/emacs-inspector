@@ -134,7 +134,7 @@
     buffer))
 
 (defun inspect-expression (exp)
-  (interactive (list (read--expression "Inspect: ")))
+  (interactive (list (read--expression "Eval and inspect: ")))
 
   (inspector-inspect (eval exp)))
 
