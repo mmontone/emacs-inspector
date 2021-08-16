@@ -6,6 +6,8 @@ Inspector tool for Emacs Lisp objects.
 
 Similar to inspectors available for Smalltalk and Common Lisp, but for Emacs Lisp.
 
+![emacs-inspector.png](emacs-inspector.png "Emacs Inspector")
+
 ## Installation
 
 This is work in progress at the moment. Just download and load the file into Emacs for now.
