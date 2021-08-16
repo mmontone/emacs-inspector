@@ -29,6 +29,15 @@
                 (symbolp (car x))))
          list))
 
+(defun inspector--proper-list-p (val)
+  "Is VAL a proper list?"
+  (if (fboundp 'format-proper-list-p)
+      ;; Emacs stable.
+      (with-no-warnings (format-proper-list-p val))
+    ;; Function was renamed in Emacs master:
+    ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=2fde6275b69fd113e78243790bf112bbdd2fe2bf
+    (with-no-warnings (proper-list-p val))))
+
 (defvar-local inspector-history nil
   "The inspector buffer history.")
 
@@ -58,13 +67,13 @@
     (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
-  (debug "True"))
+  (insert "Boolean: t"))
 
 (cl-defmethod inspect-object ((object (eql nil)))
-  (debug "Null"))
+  (insert "nil"))
 
 (cl-defmethod inspect-object ((object symbol))
-  (debug "Symbol"))
+  (insert (format "Symbol: %s" object)))
 
 (cl-defmethod inspect-object ((object t))
   (cond
@@ -87,14 +96,15 @@
   "Insert button for inspecting OBJECT.
 If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (princ-to-string label))
-                     (prin1-to-string object))
+                     (truncate-string-to-width
+		      (prin1-to-string object) 80 nil nil t))
                  'action (lambda (btn)
-			   (inspector-inspect object t))
+                           (inspector-inspect object t))
                  'follow-link t))
 
 (cl-defmethod inspect-object ((cons cons))
   (cond
-   ((and (listp cons) (plistp cons))
+   ((and (inspector--proper-list-p cons) (plistp cons))
     (insert "Property list: ")
     (newline)
     (let ((plist (copy-list cons)))
@@ -105,7 +115,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
         (let ((value (pop plist)))
           (inspector--insert-inspect-button value))
         (newline))))
-   ((listp cons)
+   ((inspector--proper-list-p cons)
     (insert "Proper list:")
     (newline)
     (let ((i 0))
@@ -113,7 +123,15 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
         (insert (format "%d: " i))
         (inspector--insert-inspect-button elem)
         (newline)
-        (incf i))))))
+        (incf i))))
+   (t ;; It is a cons cell
+    (insert "Cons cell")
+    (newline 2)
+    (insert "CAR: ")
+    (inspector--insert-inspect-button (car cons))
+    (newline)
+    (insert "CDR:")
+    (inspector--insert-inspect-button (cdr cons)))))
 
 (cl-defmethod inspect-object ((string string))
   (insert "String: ")
@@ -165,7 +183,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
       (when add-to-history
-	(push inspector-inspected-object inspector-history))
+        (push inspector-inspected-object inspector-history))
       (setq inspector-inspected-object object)
       (inspect-object object)
       (setq buffer-read-only t)
