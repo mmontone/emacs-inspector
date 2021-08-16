@@ -1,4 +1,4 @@
-;;; inspector.el --- Emacs Lisp objects inspector.  -*- lexical-binding: t -*-
+;;; inspector.el --- Tool for inspection of Emacs Lisp objects.  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 Mariano Montone
 
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; Emacs Lisp objects inspector.
+;; Tool for inspection of Emacs Lisp objects.
 
 ;;; Code:
 
