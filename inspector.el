@@ -201,6 +201,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
 (defun inspector-quit ()
   "Quit the Emacs inspector."
   (interactive)
+  (setq inspector-history nil)
   (kill-buffer "*inspector*"))
 
 (defun inspector-pop ()
