@@ -157,12 +157,6 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (inspector--insert-inspect-button (aref array i))
       (newline))))
 
-(cl-defmethod inspect-object ((sequence sequence))
-  (debug "Inspect sequence"))
-
-(cl-defmethod inspect-object ((list list))
-  (debug "Inspect list"))
-
 (cl-defmethod inspect-object ((buffer buffer))
   (debug "Inspect buffer"))
 
