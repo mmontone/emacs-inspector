@@ -70,12 +70,11 @@
   "Main generic interface for filling inspector buffers for the different types of OBJECT.")
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
-  (insert (format "Class: %s" (eioio-class-name class)))
-  (newline 2)
+  (inspector--insert-title (format "%s class" (eieio-class-name class)))
   (insert "Direct superclasses: ")
   (dolist (superclass (eieio-class-parents class))
     (inspector--insert-inspect-button
-     (eioio-class-name superclass) (eieio-class-name superclass))
+     (eieio-class-name superclass) (eieio-class-name superclass))
     (insert " "))
   (newline)
   (insert "Class slots: ")
@@ -89,10 +88,12 @@
     (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
-  (insert "Boolean: t"))
+  (inspector--insert-title "Boolean")
+  (insert "Value: t"))
 
 (cl-defmethod inspect-object ((object (eql nil)))
-  (insert "nil"))
+  (inspector--insert-title "nil")
+  (insert "Value: nil"))
 
 (cl-defmethod inspect-object ((object symbol))
   (insert (format "Symbol: %s" object)))
@@ -104,7 +105,9 @@
     (inspector--insert-inspect-button
      (eieio-object-class object)
      (eieio-class-name (eieio-object-class object)))
-    (newline 2)
+    (newline)
+    (inspector--insert-horizontal-line)
+    (newline)
     (insert "Slot values:")
     (newline)
     (dolist (slot (eieio-class-slots (eieio-object-class object)))
@@ -127,8 +130,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 (cl-defmethod inspect-object ((cons cons))
   (cond
    ((and (inspector--proper-list-p cons) (plistp cons))
-    (insert "Property list: ")
-    (newline)
+    (inspector--insert-title "Property list")
     (let ((plist (copy-list cons)))
       (while plist
         (let ((key (pop plist)))
@@ -138,10 +140,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
           (inspector--insert-inspect-button value))
         (newline))))
    ((inspector--proper-list-p cons)
-    (insert "Proper list")
-    (newline)
-    (inspector--insert-horizontal-line)
-    (newline)
+    (inspector--insert-title "Proper list")
     (let ((i 0))
       (dolist (elem cons)
         (insert (format "%d: " i))
@@ -149,8 +148,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
         (newline)
         (incf i))))
    (t ;; It is a cons cell
-    (insert "Cons cell")
-    (newline 2)
+    (inspector--insert-title "Cons cell")
     (insert "CAR: ")
     (inspector--insert-inspect-button (car cons))
     (newline)
@@ -158,12 +156,11 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (inspector--insert-inspect-button (cdr cons)))))
 
 (cl-defmethod inspect-object ((string string))
-  (insert "String: ")
+  (inspector--insert-title "String")
   (prin1 string (current-buffer)))
 
 (cl-defmethod inspect-object ((array array))
-  (insert "Array:")
-  (newline)
+  (inspector--insert-title (princ-to-string (type-of array)))
   (let ((length (length array)))
     (insert (format "Length: %s" length))
     (newline 2)
@@ -173,10 +170,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (newline))))
 
 (cl-defmethod inspect-object ((buffer buffer))
-  (insert "Buffer")
-  (newline)
-  (inspector--insert-horizontal-line)
-  (newline)
+  (inspector--insert-title "Buffer")
   (inspector--insert-property "Name")
   (inspector--insert-inspect-button (buffer-name buffer)))
 
@@ -186,6 +180,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (insert (princ-to-string number)))
 
 (cl-defmethod inspect-object ((integer integer))
+  (inspector--insert-title (princ-to-string (type-of integer)))
   (insert "Integer: ")
   (princ integer (current-buffer))
   (newline)
