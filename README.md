@@ -24,4 +24,4 @@ This is work in progress at the moment. Just download and load the file into Ema
 
 ### From the Emacs debugger
 
-When on an Emacs debugging backtrace, use `M-x debugger-inspect-locals` to inspect the local variable values of the pointed frame.
+When on an Emacs debugging backtrace, press letter `i` to inspect the local variable values of the pointed frame.
