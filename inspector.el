@@ -183,6 +183,12 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
     (let ((object (pop inspector-history)))
       (inspector-inspect object))))
 
+(defun inspect-last-sexp ()
+  "Evaluate and inspect sexp before point."
+  (interactive)
+  (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
+    (inspector-inspect result)))
+
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
   :group 'lisp)
