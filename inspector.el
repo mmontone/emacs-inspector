@@ -1,12 +1,20 @@
 ;;; emacs-inspector.el --- Inspector for Emacs Lisp objects  -*- lexical-binding: t -*-
 
-(require 'cl)
+;;; Commentary:
 
-(defun princ-to-string (x)
+;; Emacs Lisp objects inspector.
+
+;;; Code:
+
+(require 'eieio)
+
+(defun princ-to-string (object)
+  "Print OBJECT to string using `princ'."
   (with-output-to-string
-    (princ x)))
+    (princ object)))
 
 (defun plistp (list)
+  "Return T if LIST is a property list."
   (let ((expected t))
     (and (evenp (length list))
          (every (lambda (x)
@@ -15,6 +23,7 @@
                 list))))
 
 (defun alistp (list)
+  "Return T if LIST is an association list."
   (every (lambda (x)
            (and (consp x)
                 (symbolp (car x))))
@@ -23,12 +32,12 @@
 (cl-defgeneric inspect-object (object))
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
-  (insert (format "Class: %s" (class-name class)))
+  (insert (format "Class: %s" (eioio-class-name class)))
   (newline 2)
   (insert "Direct superclasses: ")
-  (dolist (superclass (class-direct-superclasses class))
+  (dolist (superclass (eieio-class-parents class))
     (inspector--insert-inspect-button
-     (class-name superclass) (class-name superclass))
+     (eioio-class-name superclass) (eieio-class-name superclass))
     (insert " "))
   (newline)
   (insert "Class slots: ")
@@ -36,9 +45,9 @@
     (insert (format "%s " (cl--slot-descriptor-name slot))))
   (newline)
   (insert "Direct subclasses:")
-  (dolist (subclass (class-direct-subclasses class))
+  (dolist (subclass (eieio-class-children class))
     (inspector--insert-inspect-button
-     (class-name subclass) (class-name subclass))
+     (eieio-class-name subclass) (eieio-class-name subclass))
     (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
@@ -55,7 +64,7 @@
    ((eieio-object-p object)
     (insert "Instance of ")
     (inspector--insert-inspect-button
-     (class-of object)
+     (eieio-object-class object)
      (eieio-class-name (eieio-object-class object)))
     (newline 2)
     (insert "Slot values:")
@@ -68,10 +77,12 @@
    (t (error "Cannot inspect object: %s" object))))
 
 (defun inspector--insert-inspect-button (object &optional label)
+  "Insert button for inspecting OBJECT.
+If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (princ-to-string label))
                      (prin1-to-string object))
                  'action (lambda (btn)
-                           (inspector-inspect object))
+			   (inspector-inspect object))
                  'follow-link t))
 
 (cl-defmethod inspect-object ((cons cons))
@@ -127,22 +138,57 @@
   (debug "Inspect hash-table"))
 
 (defun inspector-make-inspector-buffer ()
+  "Create an inspector buffer."
   (let ((buffer (get-buffer-create "*inspector*")))
     (with-current-buffer buffer
+      (inspector-mode)
       (setq buffer-read-only nil)
       (erase-buffer))
     buffer))
 
 (defun inspect-expression (exp)
+  "Evaluate and inspect EXP expression."
   (interactive (list (read--expression "Eval and inspect: ")))
 
   (inspector-inspect (eval exp)))
 
 (defun inspector-inspect (object)
+  "Top-level function for inspecting OBJECTs."
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
       (inspect-object object)
       (setq buffer-read-only t)
       (display-buffer buffer))))
 
+(defgroup inspector nil
+  "Emacs Lisp inspector customizations."
+  :group 'lisp)
+
+(defcustom inspector-use-one-buffer t
+  "Inspect objects in one buffer."
+  :type 'boolean
+  :group 'inspector)
+
+(defvar inspector-mode-map
+  (let ((map (make-keymap)))
+    (define-key map (kbd "q") 'inspector-quit)))
+
+(define-minor-mode inspector-mode
+  "Minor mode for inspector buffers."
+  :init-value nil
+  :lighter " inspector"
+  :keymap inspector-mode-map
+  :group 'inspector)
+
+;; Better define and use a major mode?:
+;; (define-derived-mode inspector-mode fundamental-mode
+;;   "Inspector"
+;;   "
+;; \\{inspector-mode-map}"
+;;   (set-syntax-table lisp-mode-syntax-table)
+;;   ;;(slime-set-truncate-lines)
+;;   (setq buffer-read-only t))
+
 (provide 'inspector)
+
+;;; inspector.el ends here
