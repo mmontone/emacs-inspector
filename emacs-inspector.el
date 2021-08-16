@@ -125,10 +125,10 @@
 
 (cl-defmethod inspect-object ((integer integer))
   (insert "Integer: ")
-  (prin1 integer (current-buffer))
+  (princ integer (current-buffer))
   (newline)
   (insert "Char: ")
-  (prin1 (char-to-string integer) (current-buffer)))
+  (princ (char-to-string integer) (current-buffer)))
 
 (cl-defmethod inspect-object ((hash-table hash-table))
   (debug "Inspect hash-table"))
