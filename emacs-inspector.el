@@ -6,6 +6,20 @@
   (with-output-to-string
     (princ x)))
 
+(defun plistp (list)
+  (let ((expected t))
+    (and (evenp (length list))
+         (every (lambda (x)
+                  (setq expected (if (eql expected t) 'symbol t))
+                  (typep x expected))
+                list))))
+
+(defun alistp (list)
+  (every (lambda (x)
+           (and (consp x)
+                (symbolp (car x))))
+         list))
+
 (cl-defgeneric inspect-object (object))
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
@@ -53,30 +67,9 @@
       (newline)))
    (t (error "Cannot inspect object: %s" object))))
 
-(defun plistp (list)
-  (let ((expected t))
-    (and (evenp (length list))
-         (every (lambda (x)
-                  (setq expected (if (eql expected t) 'symbol t))
-                  (typep x expected))
-                list))))
-
-(plistp '(as 2 asdf 2))
-(plistp '(as 2 asdf 2 bb))
-(plistp '(as 2 asdf 2 33))
-
-(defun alistp (list)
-  (every (lambda (x)
-           (and (consp x)
-                (symbolp (car x))))
-         list))
-
-(alistp '(a b c))
-(alistp '((a . 22) (b . "foo")))
-
 (defun emacs-inspector--insert-inspect-button (object &optional label)
   (insert-button (or (and label (princ-to-string label))
-		     (princ-to-string object))
+                     (prin1-to-string object))
                  'action (lambda (btn)
                            (emacs-inspector-inspect object))
                  'follow-link t))
