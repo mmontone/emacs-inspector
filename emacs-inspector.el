@@ -7,9 +7,6 @@
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
   (debug "Inspect class %s" class))
 
-(cl-defmethod inspect-object ((object eieio-default-superclass))
-  (debug "Class insntace"))
-
 (cl-defmethod inspect-object ((object (eql t)))
   (debug "True"))
 
@@ -22,16 +19,27 @@
 (cl-defmethod inspect-object ((object t))
   (cond
    ((eieio-object-p object)
-    (insert "Instance of"))
+    (insert "Instance of ")
+    (emacs-inspector--insert-inspect-button
+     (class-of object)
+     (prin1-to-string (eieio-class-name (eieio-object-class object))))
+    (newline 2)
+    (insert "Slots:")
+    (newline)
+    (dolist (slot (eieio-class-slots (eieio-object-class object)))
+      (insert (format "%s: " (cl--slot-descriptor-name slot)))
+      (emacs-inspector--insert-inspect-button
+       (slot-value object (cl--slot-descriptor-name slot)))
+      (newline)))
    (t (error "Cannot inspect object"))))
 
 (defun plistp (list)
   (let ((expected t))
     (and (evenp (length list))
-	 (every (lambda (x)
-		  (setq expected (if (eql expected t) 'symbol t))
-		  (typep x expected))
-		list))))
+         (every (lambda (x)
+                  (setq expected (if (eql expected t) 'symbol t))
+                  (typep x expected))
+                list))))
 
 (plistp '(as 2 asdf 2))
 (plistp '(as 2 asdf 2 bb))
@@ -39,18 +47,18 @@
 
 (defun alistp (list)
   (every (lambda (x)
-	   (and (consp x)
-		(symbolp (car x))))
-	 list))
+           (and (consp x)
+                (symbolp (car x))))
+         list))
 
 (alistp '(a b c))
 (alistp '((a . 22) (b . "foo")))
 
-(defun emacs-inspector--insert-inspect-button (object)
-  (insert-button (prin1-to-string object)
-		 'action (lambda (btn)
-			   (emacs-inspector-inspect object))
-		 'follow-link t))
+(defun emacs-inspector--insert-inspect-button (object &optional label)
+  (insert-button (or label (prin1-to-string object))
+                 'action (lambda (btn)
+                           (emacs-inspector-inspect object))
+                 'follow-link t))
 
 (cl-defmethod inspect-object ((cons cons))
   (cond
@@ -59,21 +67,21 @@
     (newline)
     (let ((plist (copy-list cons)))
       (while plist
-	(let ((key (pop plist)))
-	  (emacs-inspector--insert-inspect-button key))
-	(insert ": ")
-	(let ((value (pop plist)))
-	  (emacs-inspector--insert-inspect-button value))
-	(newline))))
+        (let ((key (pop plist)))
+          (emacs-inspector--insert-inspect-button key))
+        (insert ": ")
+        (let ((value (pop plist)))
+          (emacs-inspector--insert-inspect-button value))
+        (newline))))
    ((listp cons)
     (insert "Proper list:")
     (newline)
     (let ((i 0))
       (dolist (elem cons)
-	(insert (format "%d: " i))
-	(emacs-inspector--insert-inspect-button elem)
-	(newline)
-	(incf i))))))
+        (insert (format "%d: " i))
+        (emacs-inspector--insert-inspect-button elem)
+        (newline)
+        (incf i))))))
 
 (cl-defmethod inspect-object ((string string))
   (insert "String: ")
@@ -113,7 +121,7 @@
 
 (defun inspect-expression (exp)
   (interactive (list (read--expression "Inspect: ")))
-  
+
   (emacs-inspector-inspect (eval exp)))
 
 (defun emacs-inspector-inspect (object)
@@ -122,5 +130,5 @@
       (inspect-object object)
       (setq buffer-read-only t)
       (display-buffer buffer))))
-  
+
 (provide 'emacs-inspector)
