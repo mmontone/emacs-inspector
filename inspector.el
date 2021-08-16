@@ -207,6 +207,14 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
 
+(defun debugger-inspect-locals ()
+  "Inspect local variables of the frame at point in debugger backtrace."
+  (interactive)
+  (let* ((nframe (1+ (debugger-frame-number 'skip-base)))
+	 (base (debugger--backtrace-base))
+	 (locals (backtrace--locals nframe base)))
+    (inspector-inspect locals)))
+
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
   :group 'lisp)
