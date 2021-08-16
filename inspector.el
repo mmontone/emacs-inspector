@@ -7,6 +7,7 @@
 ;;; Code:
 
 (require 'eieio)
+(require 'debug)
 
 (defun princ-to-string (object)
   "Print OBJECT to string using `princ'."
@@ -222,6 +223,8 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
 	 (base (debugger--backtrace-base))
 	 (locals (backtrace--locals nframe base)))
     (inspector-inspect (alist-to-plist locals))))
+
+(define-key debugger-mode-map (kbd "i") 'debugger-inspect-locals)
 
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
