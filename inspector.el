@@ -29,6 +29,14 @@
                 (symbolp (car x))))
          list))
 
+(defun alist-to-plist (alist)
+  "Convert association list ALIST to a property list."
+  (let ((plist))
+    (dolist (cons (reverse alist))
+      (push (cdr cons) plist)
+      (push (car cons) plist))
+    plist))
+
 (defun inspector--proper-list-p (val)
   "Is VAL a proper list?"
   (if (fboundp 'format-proper-list-p)
@@ -213,7 +221,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   (let* ((nframe (1+ (debugger-frame-number 'skip-base)))
 	 (base (debugger--backtrace-base))
 	 (locals (backtrace--locals nframe base)))
-    (inspector-inspect locals)))
+    (inspector-inspect (alist-to-plist locals))))
 
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
