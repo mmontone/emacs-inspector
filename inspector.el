@@ -147,7 +147,15 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (prin1 string (current-buffer)))
 
 (cl-defmethod inspect-object ((array array))
-  (debug "Inspect array"))
+  (insert "Array:")
+  (newline)
+  (let ((length (length array)))
+    (insert (format "Length: %s" length))
+    (newline 2)
+    (dotimes (i length)
+      (insert (format "%d: " i))
+      (inspector--insert-inspect-button (aref array i))
+      (newline))))
 
 (cl-defmethod inspect-object ((sequence sequence))
   (debug "Inspect sequence"))
