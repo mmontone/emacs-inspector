@@ -29,7 +29,14 @@
                 (symbolp (car x))))
          list))
 
-(cl-defgeneric inspect-object (object))
+(defvar-local inspector-history nil
+  "The inspector buffer history.")
+
+(defvar-local inspector-inspected-object nil
+  "The current inspected object.")
+
+(cl-defgeneric inspect-object (object)
+  "Main generic interface for filling inspector buffers for the different types of OBJECT.")
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
   (insert (format "Class: %s" (eioio-class-name class)))
@@ -82,7 +89,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (insert-button (or (and label (princ-to-string label))
                      (prin1-to-string object))
                  'action (lambda (btn)
-			   (inspector-inspect object))
+			   (inspector-inspect object t))
                  'follow-link t))
 
 (cl-defmethod inspect-object ((cons cons))
@@ -152,13 +159,29 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
   (inspector-inspect (eval exp)))
 
-(defun inspector-inspect (object)
-  "Top-level function for inspecting OBJECTs."
+(defun inspector-inspect (object &optional add-to-history)
+  "Top-level function for inspecting OBJECTs.
+When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation purposes."
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
+      (when add-to-history
+	(push inspector-inspected-object inspector-history))
+      (setq inspector-inspected-object object)
       (inspect-object object)
       (setq buffer-read-only t)
       (display-buffer buffer))))
+
+(defun inspector-quit ()
+  "Quit the Emacs inspector."
+  (interactive)
+  (kill-buffer "*inspector*"))
+
+(defun inspector-pop ()
+  "Inspect previous object in inspector history."
+  (interactive)
+  (when inspector-history
+    (let ((object (pop inspector-history)))
+      (inspector-inspect object))))
 
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
@@ -171,7 +194,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
-    (define-key map (kbd "q") 'inspector-quit)))
+    (define-key map (kbd "q") 'inspector-quit)
+    (define-key map (kbd "l") 'inspector-pop)
+    map))
 
 (define-minor-mode inspector-mode
   "Minor mode for inspector buffers."
