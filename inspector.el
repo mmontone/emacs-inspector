@@ -322,6 +322,29 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
     (define-key map (kbd "l") 'inspector-pop)
     map))
 
+(easy-menu-define
+ inspector-mode-menu inspector-mode-map
+ "Menu for inspector."
+ '("Inspector"
+   ["Previous" inspector-pop :help "Inpect previous object"]
+   ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
+
+(defvar inspector-tool-bar-map
+  (let ((map (make-sparse-keymap)))
+    (tool-bar-local-item-from-menu
+     'inspector-pop "left-arrow" map inspector-mode-map
+     :rtl "left-arrow"
+     :label "Back"
+     :vert-only t)
+    (tool-bar-local-item-from-menu
+     'inspector-quit "exit" map inspector-mode-map
+     :vert-only t)
+    map))
+
+(add-hook 'inspector-mode-hook
+          (lambda ()
+            (setq-local tool-bar-map inspector-tool-bar-map)))
+
 (define-minor-mode inspector-mode
   "Minor mode for inspector buffers."
   :init-value nil
