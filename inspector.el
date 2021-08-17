@@ -256,7 +256,8 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (with-current-buffer buffer
       (inspector-mode)
       (setq buffer-read-only nil)
-      (erase-buffer))
+      (erase-buffer)
+      (make-local-variable '*))
     buffer))
 
 (defun inspect-expression (exp)
@@ -273,6 +274,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
       (when add-to-history
         (push inspector-inspected-object inspector-history))
       (setq inspector-inspected-object object)
+      (setq * object)
       (inspect-object object)
       (setq buffer-read-only t)
       (display-buffer buffer))))
@@ -320,6 +322,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   (let ((map (make-keymap)))
     (define-key map (kbd "q") 'inspector-quit)
     (define-key map (kbd "l") 'inspector-pop)
+    (define-key map (kbd "e") 'eval-expression)
     map))
 
 (easy-menu-define
