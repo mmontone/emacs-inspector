@@ -3,8 +3,8 @@
 ;; Copyright (C) 2021 Mariano Montone
 
 ;; Author: Mariano Montone <marianomontone@gmail.com>
-;; URL: https://github.com/mmontone/slime-doc-contribs
-;; Keywords: help, lisp, slime, common-lisp
+;; URL: https://github.com/mmontone/emacs-inspector
+;; Keywords: debugging, tool, emacs-lisp, development
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "25"))
 
@@ -152,12 +152,22 @@
       (newline)))
    (t (error "Cannot inspect object: %s" object))))
 
+(defcustom inspector-end-column 80
+  "Control print truncation size in inspector."
+  :type 'integer
+  :group 'inspector)
+
+(defun inspector--print-truncated (object &optional end-column)
+  "Print OBJECT truncated.  END-COLUMN controls the truncation."
+  (truncate-string-to-width (prin1-to-string object)
+			    (or end-column inspector-end-column)
+			    nil nil t))
+
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
 If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (princ-to-string label))
-                     (truncate-string-to-width
-		      (prin1-to-string object) 80 nil nil t))
+                     (inspector--print-truncated object))
                  'action (lambda (btn)
 			   (ignore btn)
                            (inspector-inspect object t))
@@ -224,7 +234,21 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (princ (char-to-string integer) (current-buffer)))
 
 (cl-defmethod inspect-object ((hash-table hash-table))
-  (debug "Inspect hash-table"))
+  "Render inspector buffer for HASH-TABLEs."
+  (inspector--insert-title "Hash table")
+  (insert (inspector--print-truncated hash-table))
+  (newline)
+  (inspector--insert-property "Size")
+  (insert (princ-to-string (hash-table-size hash-table)))
+  (newline 2)
+  (inspector--insert-property "Values")
+  (newline)
+  (maphash (lambda (key value)
+	     (inspector--insert-inspect-button key)
+	     (insert ": ")
+	     (inspector--insert-inspect-button value)
+	     (newline))
+	   hash-table))
 
 (defun inspector-make-inspector-buffer ()
   "Create an inspector buffer."
