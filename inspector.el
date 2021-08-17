@@ -139,6 +139,15 @@
       (inspector--insert-inspect-button
        (slot-value object (cl--slot-descriptor-name slot)))
       (newline)))
+   ((cl-struct-p object)
+    (inspector--insert-title (format "%s struct" (type-of object)))
+    (insert "Slot values:")
+    (newline)
+    (dolist (slot (cdr (cl-struct-slot-info (type-of object))))
+      (insert (format "%s: " (car slot)))
+      (inspector--insert-inspect-button
+       (cl-struct-slot-value (type-of object) (car slot) object))
+      (newline)))
    (t (error "Cannot inspect object: %s" object))))
 
 (defun inspector--insert-inspect-button (object &optional label)
