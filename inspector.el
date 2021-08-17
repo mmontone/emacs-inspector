@@ -38,15 +38,15 @@
 (defun plistp (list)
   "Return T if LIST is a property list."
   (let ((expected t))
-    (and (evenp (length list))
-         (every (lambda (x)
+    (and (cl-evenp (length list))
+         (cl-every (lambda (x)
                   (setq expected (if (eql expected t) 'symbol t))
-                  (typep x expected))
+                  (cl-typep x expected))
                 list))))
 
 (defun alistp (list)
   "Return T if LIST is an association list."
-  (every (lambda (x)
+  (cl-every (lambda (x)
            (and (consp x)
                 (symbolp (car x))))
          list))
@@ -112,10 +112,12 @@
     (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
+  (ignore object)
   (inspector--insert-title "Boolean")
   (insert "Value: t"))
 
 (cl-defmethod inspect-object ((object (eql nil)))
+  (ignore object)
   (inspector--insert-title "nil")
   (insert "Value: nil"))
 
@@ -157,6 +159,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                      (truncate-string-to-width
 		      (prin1-to-string object) 80 nil nil t))
                  'action (lambda (btn)
+			   (ignore btn)
                            (inspector-inspect object t))
                  'follow-link t))
 
@@ -164,7 +167,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (cond
    ((and (inspector--proper-list-p cons) (plistp cons))
     (inspector--insert-title "Property list")
-    (let ((plist (copy-list cons)))
+    (let ((plist (cl-copy-list cons)))
       (while plist
         (let ((key (pop plist)))
           (inspector--insert-inspect-button key))
@@ -179,7 +182,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
         (insert (format "%d: " i))
         (inspector--insert-inspect-button elem)
         (newline)
-        (incf i))))
+        (cl-incf i))))
    (t ;; It is a cons cell
     (inspector--insert-title "Cons cell")
     (insert "CAR: ")
