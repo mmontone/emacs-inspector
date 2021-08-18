@@ -59,18 +59,50 @@
       (push (car cons) plist))
     plist))
 
+(defgroup inspector nil
+  "Emacs Lisp inspector customizations."
+  :group 'lisp)
+
+(defface inspector-title-face
+  '((t ()))
+  "Face for title describing object."
+  :group 'inspector)
+
+(defface inspector-label-face
+  '((t (:inherit font-lock-constant-face)))
+  "Face for labels in the inspector."
+  :group 'inspector)
+
+(defface inspector-value-face
+    '((t (:inherit font-lock-builtin-face)))
+  "Face for things which can themselves be inspected."
+  :group 'inspector)
+
+(defface inspector-action-face
+    '((t (:inherit font-lock-warning-face)))
+  "Face for labels of inspector actions."
+  :group 'inspector)
+
+(defface inspector-type-face
+  '((t (:inherit font-lock-type-face)))
+  "Face for type description in inspector."
+  :group 'inspector)
+
 (defun inspector--insert-horizontal-line (&rest width)
   "Insert an horizontal line with width WIDTH."
   (insert (make-string (or width 80) ?\u2500)))
 
-(defun inspector--insert-property (property-name)
-  "Insert an inspector property."
-  (insert property-name)
+(defun inspector--insert-label (label)
+  "Insert an inspector label."
+  (insert (propertize label 'face 'inspector-label-face))
   (insert ": "))
+
+(defun inspector--insert-value (value)
+  (insert (propertize (princ-to-string value) 'face 'inspector-value-face)))
 
 (defun inspector--insert-title (title)
   "Insert title for inspector."
-  (insert title)
+  (insert (propertize title 'face 'inspector-title-face))
   (newline)
   (inspector--insert-horizontal-line)
   (newline))
@@ -217,12 +249,12 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
 (cl-defmethod inspect-object ((buffer buffer))
   (inspector--insert-title "Buffer")
-  (inspector--insert-property "Name")
+  (inspector--insert-label "Name")
   (inspector--insert-inspect-button (buffer-name buffer)))
 
 (cl-defmethod inspect-object ((number number))
   (inspector--insert-title (princ-to-string (type-of number)))
-  (inspector--insert-property "Value")
+  (inspector--insert-label "Value")
   (insert (princ-to-string number)))
 
 (cl-defmethod inspect-object ((integer integer))
@@ -238,10 +270,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-title "Hash table")
   (insert (inspector--print-truncated hash-table))
   (newline)
-  (inspector--insert-property "Size")
+  (inspector--insert-label "Size")
   (insert (princ-to-string (hash-table-size hash-table)))
   (newline 2)
-  (inspector--insert-property "Values")
+  (inspector--insert-label "Values")
   (newline)
   (maphash (lambda (key value)
 	     (inspector--insert-inspect-button key)
@@ -308,15 +340,6 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
 (define-key debugger-mode-map (kbd "i") 'debugger-inspect-locals)
-
-(defgroup inspector nil
-  "Emacs Lisp inspector customizations."
-  :group 'lisp)
-
-(defcustom inspector-use-one-buffer t
-  "Inspect objects in one buffer."
-  :type 'boolean
-  :group 'inspector)
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
