@@ -32,28 +32,27 @@
 
 ;;---- Utils ----------
 
-(defun princ-to-string (object)
+(defun inspector--princ-to-string (object)
   "Print OBJECT to string using `princ'."
   (with-output-to-string
     (princ object)))
 
-(defun plistp (list)
+(defun inspector--plistp (list)
   "Return T if LIST is a property list."
   (let ((expected t))
-    (and (cl-evenp (length list))
+    (and (listp list)
+	 (cl-evenp (length list))
          (cl-every (lambda (x)
                      (setq expected (if (eql expected t) 'symbol t))
                      (cl-typep x expected))
                    list))))
 
-(defun alistp (list)
+(defun inspector--alistp (list)
   "Return T if LIST is an association list."
-  (cl-every (lambda (x)
-              (and (consp x)
-                   (symbolp (car x))))
-            list))
+  (and (listp list)
+       (cl-every (lambda (x) (consp x)) list)))
 
-(defun alist-to-plist (alist)
+(defun inspector--alist-to-plist (alist)
   "Convert association list ALIST to a property list."
   (let ((plist))
     (dolist (cons (reverse alist))
@@ -129,7 +128,7 @@
   (insert ": "))
 
 (defun inspector--insert-value (value)
-  (insert (propertize (princ-to-string value) 'face 'inspector-value-face)))
+  (insert (propertize (inspector--princ-to-string value) 'face 'inspector-value-face)))
 
 (defun inspector--insert-title (title)
   "Insert title for inspector."
@@ -147,7 +146,7 @@
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
 If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
-  (insert-button (or (and label (princ-to-string label))
+  (insert-button (or (and label (inspector--princ-to-string label))
                      (inspector--print-truncated object))
                  'action (lambda (btn)
                            (ignore btn)
@@ -231,7 +230,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
    ((functionp object)
     (inspector--insert-title "Function")
     (inspector--insert-label "Name")
-    (inspector--insert-value (princ-to-string object))
+    (inspector--insert-value (inspector--princ-to-string object))
     (newline)
     (inspector--insert-label "Arglist")
     (inspector--insert-value (elisp-get-fnsym-args-string object)))
@@ -239,7 +238,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
 (cl-defmethod inspect-object ((cons cons))
   (cond
-   ((and (inspector--proper-list-p cons) (plistp cons))
+   ((and (inspector--proper-list-p cons) (inspector--plistp cons))
     (inspector--insert-title "Property list")
     (let ((plist (cl-copy-list cons)))
       (while plist
@@ -270,7 +269,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (prin1 string (current-buffer)))
 
 (cl-defmethod inspect-object ((array array))
-  (inspector--insert-title (princ-to-string (type-of array)))
+  (inspector--insert-title (inspector--princ-to-string (type-of array)))
   (let ((length (length array)))
     (insert (format "Length: %s" length))
     (newline 2)
@@ -285,12 +284,12 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-inspect-button (buffer-name buffer)))
 
 (cl-defmethod inspect-object ((number number))
-  (inspector--insert-title (princ-to-string (type-of number)))
+  (inspector--insert-title (inspector--princ-to-string (type-of number)))
   (inspector--insert-label "Value")
-  (insert (princ-to-string number)))
+  (insert (inspector--princ-to-string number)))
 
 (cl-defmethod inspect-object ((integer integer))
-  (inspector--insert-title (princ-to-string (type-of integer)))
+  (inspector--insert-title (inspector--princ-to-string (type-of integer)))
   (insert "Integer: ")
   (princ integer (current-buffer))
   (newline)
@@ -303,7 +302,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (insert (inspector--print-truncated hash-table))
   (newline)
   (inspector--insert-label "Size")
-  (insert (princ-to-string (hash-table-size hash-table)))
+  (insert (inspector--princ-to-string (hash-table-size hash-table)))
   (newline 2)
   (inspector--insert-label "Values")
   (newline)
@@ -383,7 +382,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let* ((nframe (1+ (debugger-frame-number 'skip-base)))
          (base (debugger--backtrace-base))
          (locals (backtrace--locals nframe base)))
-    (inspector-inspect (alist-to-plist locals))))
+    (inspector-inspect (inspector--alist-to-plist locals))))
 
 ;;--------- Inspector mode ---------------------------------
 
