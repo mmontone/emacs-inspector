@@ -42,16 +42,16 @@
   (let ((expected t))
     (and (cl-evenp (length list))
          (cl-every (lambda (x)
-                  (setq expected (if (eql expected t) 'symbol t))
-                  (cl-typep x expected))
-                list))))
+                     (setq expected (if (eql expected t) 'symbol t))
+                     (cl-typep x expected))
+                   list))))
 
 (defun alistp (list)
   "Return T if LIST is an association list."
   (cl-every (lambda (x)
-           (and (consp x)
-                (symbolp (car x))))
-         list))
+              (and (consp x)
+                   (symbolp (car x))))
+            list))
 
 (defun alist-to-plist (alist)
   "Convert association list ALIST to a property list."
@@ -87,12 +87,12 @@
   :group 'inspector)
 
 (defface inspector-value-face
-    '((t (:inherit font-lock-builtin-face)))
+  '((t (:inherit font-lock-builtin-face)))
   "Face for things which can themselves be inspected."
   :group 'inspector)
 
 (defface inspector-action-face
-    '((t (:inherit font-lock-warning-face)))
+  '((t (:inherit font-lock-warning-face)))
   "Face for labels of inspector actions."
   :group 'inspector)
 
@@ -104,6 +104,11 @@
 (defcustom inspector-end-column 80
   "Control print truncation size in inspector."
   :type 'integer
+  :group 'inspector)
+
+(defcustom inspector-show-documentation t
+  "Whether to show variables and function documentation or not."
+  :type 'boolean
   :group 'inspector)
 
 ;;-------- Inspector code -------------------
@@ -136,8 +141,8 @@
 (defun inspector--print-truncated (object &optional end-column)
   "Print OBJECT truncated.  END-COLUMN controls the truncation."
   (truncate-string-to-width (prin1-to-string object)
-			    (or end-column inspector-end-column)
-			    nil nil t))
+                            (or end-column inspector-end-column)
+                            nil nil t))
 
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
@@ -145,7 +150,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (insert-button (or (and label (princ-to-string label))
                      (inspector--print-truncated object))
                  'action (lambda (btn)
-			   (ignore btn)
+                           (ignore btn)
                            (inspector-inspect object t))
                  'follow-link t))
 
@@ -207,7 +212,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (newline)
     (inspector--insert-horizontal-line)
     (newline)
-    (insert "Slot values:")
+    (inspector--insert-label "Slot values")
     (newline)
     (dolist (slot (eieio-class-slots (eieio-object-class object)))
       (insert (format "%s: " (cl--slot-descriptor-name slot)))
@@ -216,13 +221,20 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (newline)))
    ((cl-struct-p object)
     (inspector--insert-title (format "%s struct" (type-of object)))
-    (insert "Slot values:")
+    (inspector--insert-label "Slot values")
     (newline)
     (dolist (slot (cdr (cl-struct-slot-info (type-of object))))
       (insert (format "%s: " (car slot)))
       (inspector--insert-inspect-button
        (cl-struct-slot-value (type-of object) (car slot) object))
       (newline)))
+   ((functionp object)
+    (inspector--insert-title "Function")
+    (inspector--insert-label "Name")
+    (inspector--insert-value (princ-to-string object))
+    (newline)
+    (inspector--insert-label "Arglist")
+    (inspector--insert-value (elisp-get-fnsym-args-string object)))
    (t (error "Cannot inspect object: %s" object))))
 
 (cl-defmethod inspect-object ((cons cons))
@@ -296,11 +308,11 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-label "Values")
   (newline)
   (maphash (lambda (key value)
-	     (inspector--insert-inspect-button key)
-	     (insert ": ")
-	     (inspector--insert-inspect-button value)
-	     (newline))
-	   hash-table))
+             (inspector--insert-inspect-button key)
+             (insert ": ")
+             (inspector--insert-inspect-button value)
+             (newline))
+           hash-table))
 
 ;;--- Buffers ------------------------------
 
@@ -360,8 +372,8 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   "Inspect local variables of the frame at point in debugger backtrace."
   (interactive)
   (let* ((nframe (1+ (debugger-frame-number 'skip-base)))
-	 (base (debugger--backtrace-base))
-	 (locals (backtrace--locals nframe base)))
+         (base (debugger--backtrace-base))
+         (locals (backtrace--locals nframe base)))
     (inspector-inspect (alist-to-plist locals))))
 
 ;;--------- Inspector mode ---------------------------------
@@ -377,12 +389,12 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
     map))
 
 (easy-menu-define
- inspector-mode-menu inspector-mode-map
- "Menu for inspector."
- '("Inspector"
-   ["Previous" inspector-pop :help "Inpect previous object"]
-   ["Evaluate" eval-expression :help "Evaluate expression with current inspected object as context"]
-   ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
+  inspector-mode-menu inspector-mode-map
+  "Menu for inspector."
+  '("Inspector"
+    ["Previous" inspector-pop :help "Inpect previous object"]
+    ["Evaluate" eval-expression :help "Evaluate expression with current inspected object as context"]
+    ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
 
 (defvar inspector-tool-bar-map
   (let ((map (make-sparse-keymap)))
