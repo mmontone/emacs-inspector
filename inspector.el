@@ -41,7 +41,7 @@
   "Return T if LIST is a property list."
   (let ((expected t))
     (and (inspector--proper-list-p list)
-	 (cl-evenp (length list))
+         (cl-evenp (length list))
          (cl-every (lambda (x)
                      (setq expected (if (eql expected t) 'symbol t))
                      (cl-typep x expected))
@@ -244,7 +244,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 (cl-defmethod inspect-object ((cons cons))
   (cond
    ((and inspector-use-specialized-inspectors-for-lists
-	 (inspector--plistp cons))
+         (inspector--plistp cons))
     (inspector--insert-title "Property list")
     (let ((plist (cl-copy-list cons)))
       (while plist
@@ -255,7 +255,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
           (inspector--insert-inspect-button value))
         (newline))))
    ((and inspector-use-specialized-inspectors-for-lists
-	 (inspector--alistp cons))
+         (inspector--alistp cons))
     (inspector--insert-title "Association list")
     (dolist (cons cons)
       (insert "(")
@@ -300,7 +300,17 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-inspect-button (buffer-name buffer))
   (newline)
   (inspector--insert-label "Window")
-  (inspector--insert-inspect-button (get-buffer-window buffer)))
+  (inspector--insert-inspect-button (get-buffer-window buffer))
+  (newline)
+  (let ((buffer-string (with-current-buffer buffer
+                         (buffer-string)))
+        (cursor-position (with-current-buffer buffer
+                           (what-cursor-position))))
+    (inspector--insert-label "Contents")
+    (inspector--insert-inspect-button buffer-string)
+    (newline)
+    (inspector--insert-label "Cursor position")
+    (inspector--insert-inspect-button cursor-position)))
 
 (cl-defmethod inspect-object ((window window))
   (inspector--insert-title (prin1-to-string window))
