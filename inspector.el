@@ -40,7 +40,7 @@
 (defun inspector--plistp (list)
   "Return T if LIST is a property list."
   (let ((expected t))
-    (and (listp list)
+    (and (inspector--proper-list-p list)
 	 (cl-evenp (length list))
          (cl-every (lambda (x)
                      (setq expected (if (eql expected t) 'symbol t))
@@ -49,7 +49,7 @@
 
 (defun inspector--alistp (list)
   "Return T if LIST is an association list."
-  (and (listp list)
+  (and (inspector--proper-list-p list)
        (cl-every (lambda (x) (consp x)) list)))
 
 (defun inspector--alist-to-plist (alist)
