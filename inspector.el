@@ -75,30 +75,34 @@
   "Emacs Lisp inspector customizations."
   :group 'lisp)
 
+(defgroup inspector-faces nil
+  "Emacs Lisp inspector faces."
+  :group 'inspector)
+
 (defface inspector-title-face
   '((t ()))
   "Face for title describing object."
-  :group 'inspector)
+  :group 'inspector-faces)
 
 (defface inspector-label-face
   '((t (:inherit font-lock-constant-face)))
   "Face for labels in the inspector."
-  :group 'inspector)
+  :group 'inspector-faces)
 
 (defface inspector-value-face
   '((t (:inherit font-lock-builtin-face)))
   "Face for things which can themselves be inspected."
-  :group 'inspector)
+  :group 'inspector-faces)
 
 (defface inspector-action-face
   '((t (:inherit font-lock-warning-face)))
   "Face for labels of inspector actions."
-  :group 'inspector)
+  :group 'inspector-faces)
 
 (defface inspector-type-face
   '((t (:inherit font-lock-type-face)))
   "Face for type description in inspector."
-  :group 'inspector)
+  :group 'inspector-faces)
 
 (defcustom inspector-end-column 80
   "Control print truncation size in inspector."
