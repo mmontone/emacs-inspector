@@ -318,15 +318,16 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
 (defun inspector-make-inspector-buffer ()
   "Create an inspector buffer."
-  (let ((buffer (get-buffer-create "*inspector*")))
+  (let ((buffer (or (get-buffer "*inspector*")
+                    (let ((buf (get-buffer-create "*inspector*")))
+                      (with-current-buffer buf
+                        (inspector-mode)
+                        (make-local-variable '*))
+                      buf))))
     (with-current-buffer buffer
-      (inspector-mode)
-      ;;(emacs-lisp-mode)
       (setq buffer-read-only nil)
-      (erase-buffer)
-      (make-local-variable '*))
+      (erase-buffer))
     buffer))
-
 
 ;;------ Commands -----------------------------
 
@@ -336,18 +337,26 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
   (inspector-inspect (eval exp)))
 
-(defun inspector-inspect (object &optional add-to-history)
-  "Top-level function for inspecting OBJECTs.
-When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation purposes."
+(defun inspector--basic-inspect (object)
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
-      (when add-to-history
-        (push inspector-inspected-object inspector-history))
       (setq inspector-inspected-object object)
       (setq * object)
       (inspect-object object)
       (setq buffer-read-only t)
-      (display-buffer buffer))))
+      (display-buffer buffer)
+      buffer)))
+
+(defun inspector-inspect (object &optional preserve-history)
+  "Top-level function for inspecting OBJECTs.
+When PRESERVE-HISTORY is T, inspector history is not cleared."
+  (let ((current-inspected-object inspector-inspected-object)
+        (buffer (inspector--basic-inspect object)))
+    (with-current-buffer buffer
+      (unless preserve-history
+        (setq inspector-history nil))
+      (when preserve-history
+        (push current-inspected-object inspector-history)))))
 
 (defun inspector-quit ()
   "Quit the Emacs inspector."
@@ -360,7 +369,7 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
   (interactive)
   (when inspector-history
     (let ((object (pop inspector-history)))
-      (inspector-inspect object))))
+      (inspector--basic-inspect object))))
 
 (defun inspect-last-sexp ()
   "Evaluate and inspect sexp before point."
@@ -412,21 +421,9 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
           (lambda ()
             (setq-local tool-bar-map inspector-tool-bar-map)))
 
-(define-minor-mode inspector-mode
-  "Minor mode for inspector buffers."
-  :init-value nil
-  :lighter " inspector"
-  :keymap inspector-mode-map
-  :group 'inspector)
-
 ;; Better define and use a major mode?:
-;; (define-derived-mode inspector-mode fundamental-mode
-;;   "Inspector"
-;;   "
-;; \\{inspector-mode-map}"
-;;   (set-syntax-table lisp-mode-syntax-table)
-;;   ;;(slime-set-truncate-lines)
-;;   (setq buffer-read-only t))
+(define-derived-mode inspector-mode emacs-lisp-mode
+  "Inspector mode")
 
 (provide 'inspector)
 
