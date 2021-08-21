@@ -110,6 +110,11 @@
   :type 'boolean
   :group 'inspector)
 
+(defcustom inspector-use-specialized-inspectors-for-lists t
+  "Whether to use specialized inspectors for plists and alists."
+  :type 'boolean
+  :group 'inspector)
+
 ;;-------- Inspector code -------------------
 
 (defvar-local inspector-history nil
@@ -238,7 +243,8 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 
 (cl-defmethod inspect-object ((cons cons))
   (cond
-   ((and (inspector--proper-list-p cons) (inspector--plistp cons))
+   ((and inspector-use-specialized-inspectors-for-lists
+	 (inspector--plistp cons))
     (inspector--insert-title "Property list")
     (let ((plist (cl-copy-list cons)))
       (while plist
@@ -248,6 +254,16 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
         (let ((value (pop plist)))
           (inspector--insert-inspect-button value))
         (newline))))
+   ((and inspector-use-specialized-inspectors-for-lists
+	 (inspector--alistp cons))
+    (inspector--insert-title "Association list")
+    (dolist (cons cons)
+      (insert "(")
+      (inspector--insert-inspect-button (car cons))
+      (insert " . ")
+      (inspector--insert-inspect-button (cdr cons))
+      (insert ")")
+      (newline)))
    ((inspector--proper-list-p cons)
     (inspector--insert-title "Proper list")
     (let ((i 0))
