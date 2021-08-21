@@ -77,7 +77,7 @@
 
 (defgroup inspector-faces nil
   "Emacs Lisp inspector faces."
-  :group 'inspector)
+  :group 'faces)
 
 (defface inspector-title-face
   '((t ()))
