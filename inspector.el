@@ -30,6 +30,8 @@
 (require 'eieio)
 (require 'debug)
 
+;;---- Utils ----------
+
 (defun princ-to-string (object)
   "Print OBJECT to string using `princ'."
   (with-output-to-string
@@ -58,6 +60,17 @@
       (push (cdr cons) plist)
       (push (car cons) plist))
     plist))
+
+(defun inspector--proper-list-p (val)
+  "Is VAL a proper list?"
+  (if (fboundp 'format-proper-list-p)
+      ;; Emacs stable.
+      (with-no-warnings (format-proper-list-p val))
+    ;; Function was renamed in Emacs master:
+    ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=2fde6275b69fd113e78243790bf112bbdd2fe2bf
+    (with-no-warnings (proper-list-p val))))
+
+;;--- Customization ----------------------------
 
 (defgroup inspector nil
   "Emacs Lisp inspector customizations."
@@ -88,6 +101,19 @@
   "Face for type description in inspector."
   :group 'inspector)
 
+(defcustom inspector-end-column 80
+  "Control print truncation size in inspector."
+  :type 'integer
+  :group 'inspector)
+
+;;-------- Inspector code -------------------
+
+(defvar-local inspector-history nil
+  "The inspector buffer history.")
+
+(defvar-local inspector-inspected-object nil
+  "The current inspected object.")
+
 (defun inspector--insert-horizontal-line (&rest width)
   "Insert an horizontal line with width WIDTH."
   (insert (make-string (or width 80) ?\u2500)))
@@ -107,23 +133,26 @@
   (inspector--insert-horizontal-line)
   (newline))
 
-(defun inspector--proper-list-p (val)
-  "Is VAL a proper list?"
-  (if (fboundp 'format-proper-list-p)
-      ;; Emacs stable.
-      (with-no-warnings (format-proper-list-p val))
-    ;; Function was renamed in Emacs master:
-    ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=2fde6275b69fd113e78243790bf112bbdd2fe2bf
-    (with-no-warnings (proper-list-p val))))
+(defun inspector--print-truncated (object &optional end-column)
+  "Print OBJECT truncated.  END-COLUMN controls the truncation."
+  (truncate-string-to-width (prin1-to-string object)
+			    (or end-column inspector-end-column)
+			    nil nil t))
 
-(defvar-local inspector-history nil
-  "The inspector buffer history.")
-
-(defvar-local inspector-inspected-object nil
-  "The current inspected object.")
+(defun inspector--insert-inspect-button (object &optional label)
+  "Insert button for inspecting OBJECT.
+If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
+  (insert-button (or (and label (princ-to-string label))
+                     (inspector--print-truncated object))
+                 'action (lambda (btn)
+			   (ignore btn)
+                           (inspector-inspect object t))
+                 'follow-link t))
 
 (cl-defgeneric inspect-object (object)
   "Main generic interface for filling inspector buffers for the different types of OBJECT.")
+
+;;--------- Object inspectors ----------------------------------
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
   (inspector--insert-title (format "%s class" (eieio-class-name class)))
@@ -154,7 +183,19 @@
   (insert "Value: nil"))
 
 (cl-defmethod inspect-object ((object symbol))
-  (insert (format "Symbol: %s" object)))
+  (inspector--insert-title "Symbol")
+  (inspector--insert-label "Name")
+  (inspector--insert-value (symbol-name object))
+  (newline)
+  (inspector--insert-label "Is bound")
+  (inspector--insert-value (format "%s" (boundp object)))
+  (newline)
+  (inspector--insert-label "Function")
+  (inspector--insert-inspect-button (symbol-function object))
+  (newline)
+  (inspector--insert-label "Property list")
+  (inspector--insert-inspect-button (symbol-plist object))
+  (newline))
 
 (cl-defmethod inspect-object ((object t))
   (cond
@@ -183,27 +224,6 @@
        (cl-struct-slot-value (type-of object) (car slot) object))
       (newline)))
    (t (error "Cannot inspect object: %s" object))))
-
-(defcustom inspector-end-column 80
-  "Control print truncation size in inspector."
-  :type 'integer
-  :group 'inspector)
-
-(defun inspector--print-truncated (object &optional end-column)
-  "Print OBJECT truncated.  END-COLUMN controls the truncation."
-  (truncate-string-to-width (prin1-to-string object)
-			    (or end-column inspector-end-column)
-			    nil nil t))
-
-(defun inspector--insert-inspect-button (object &optional label)
-  "Insert button for inspecting OBJECT.
-If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
-  (insert-button (or (and label (princ-to-string label))
-                     (inspector--print-truncated object))
-                 'action (lambda (btn)
-			   (ignore btn)
-                           (inspector-inspect object t))
-                 'follow-link t))
 
 (cl-defmethod inspect-object ((cons cons))
   (cond
@@ -282,6 +302,8 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 	     (newline))
 	   hash-table))
 
+;;--- Buffers ------------------------------
+
 (defun inspector-make-inspector-buffer ()
   "Create an inspector buffer."
   (let ((buffer (get-buffer-create "*inspector*")))
@@ -292,6 +314,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (erase-buffer)
       (make-local-variable '*))
     buffer))
+
+
+;;------ Commands -----------------------------
 
 (defun inspect-expression (exp)
   "Evaluate and inspect EXP expression."
@@ -338,6 +363,8 @@ When ADD-TO-HISTORY is T, OBJECT is added to inspector history for navigation pu
 	 (base (debugger--backtrace-base))
 	 (locals (backtrace--locals nframe base)))
     (inspector-inspect (alist-to-plist locals))))
+
+;;--------- Inspector mode ---------------------------------
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
 (define-key debugger-mode-map (kbd "i") 'debugger-inspect-locals)
