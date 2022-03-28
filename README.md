@@ -39,4 +39,4 @@ This is the [el-get](https://www.emacswiki.org/emacs/el-get "el-get") recipe:
 
 ### From the Emacs debugger
 
-When on an Emacs debugging backtrace, press letter `i` to inspect the local variable values of the pointed frame.
+When on an Emacs debugging backtrace, press letter `i` to inspect the pointed frame and its local variables.
