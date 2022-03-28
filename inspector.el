@@ -451,18 +451,35 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
 
+;;-- Inspection from Emacs debugger
+
 (defun debugger-inspect-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
   (interactive)
-  (let* ((nframe (1+ (debugger-frame-number 'skip-base)))
-         (base (debugger--backtrace-base))
-         (locals (backtrace--locals nframe base)))
+  (let* ((nframe (debugger-frame-number))
+         (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
+
+(defun debugger-inspect-current-frame ()
+  "Inspect current frame in debugger backtrace."
+  (interactive)
+  (let* ((nframe (debugger-frame-number))
+         (frame (backtrace-frame nframe)))
+    (inspector-inspect frame)))
+
+(defun debugger-inspect-frame-and-locals ()
+  "Inspect current frame and locals in debugger backtrace."
+  (interactive)
+  (let* ((nframe (debugger-frame-number))
+         (locals (backtrace--locals nframe))
+	 (frame (backtrace-frame nframe)))
+    (inspector-inspect (list :frame frame
+			     :locals (inspector--alist-to-plist locals)))))
 
 ;;--------- Inspector mode ---------------------------------
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map (kbd "i") 'debugger-inspect-locals)
+(define-key debugger-mode-map (kbd "i") 'debugger-inspect-frame-and-locals)
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
