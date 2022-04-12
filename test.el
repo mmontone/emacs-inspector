@@ -55,6 +55,9 @@
 
 (inspector-inspect (make-finalizer #'print))
 
+(inspector-inspect (make-button 0 10))
+(inspector-inspect (make-overlay 0 10))
+
 (defclass person ()
   ((name :initform "John")
    (age :initform 40)))
@@ -70,4 +73,5 @@
 (inspector-inspect (cl-loop for i from 1 to 101 collect i))
 (inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
 
-(inspector-inspect (apply 'vector (cl-loop for i from 1 to 101 collect i)))
+(inspector-inspect (apply 'vector (cl-loop for i from 1 to 1000 collect i)))
+
