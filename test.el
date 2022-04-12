@@ -11,7 +11,6 @@
 (inspector-inspect '(1 2 3))
 (inspector-inspect [1 "two" (three)])
 
-;; TODO:
 ;; Long lists need to be sliced:
 (inspector-inspect (cl-loop for i from 1 to 3000 collect i))
 
@@ -66,3 +65,9 @@
   x y)
 
 (inspector-inspect (make-rectangle :x 30 :y 40))
+
+(setq inspector-slice-size 10)
+(inspector-inspect (cl-loop for i from 1 to 101 collect i))
+(inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
+
+(inspector-inspect (apply 'vector (cl-loop for i from 1 to 101 collect i)))
