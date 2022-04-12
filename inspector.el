@@ -119,6 +119,11 @@
   :type 'boolean
   :group 'inspector)
 
+(defcustom inspector-slice-size 100
+  "Size of sequence slices in inspector."
+  :type 'integer
+  :group 'inspector)
+
 ;;-------- Inspector code -------------------
 
 (defvar-local inspector-history nil
@@ -161,6 +166,11 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                            (ignore btn)
                            (inspector-inspect object t))
                  'follow-link t))
+
+(defun inspector--do-with-slicer (slicer function)
+  (let ((slice (funcall slicer)))
+    (when slice
+      (funcall function slice (lambda () (inspector--do-with-slicer slicer function))))))
 
 (cl-defgeneric inspect-object (object)
   "Main generic interface for filling inspector buffers for the different types of OBJECT.")
@@ -282,12 +292,30 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (newline)))
    ((inspector--proper-list-p cons)
     (inspector--insert-title "Proper list")
-    (let ((i 0))
-      (dolist (elem cons)
-        (insert (format "%d: " i))
-        (inspector--insert-inspect-button elem)
-        (newline)
-        (cl-incf i))))
+    (let ((i 0)
+	  (j 0))
+      (inspector--do-with-slicer
+       (lambda ()
+	 (when (< i (length cons))
+	   (subseq cons i (min (incf i inspector-slice-size)
+			       (length cons)))))
+       (lambda (slice cont)
+	 (dolist (elem slice)
+           (insert (format "%d: " j))
+	   (incf j)
+           (inspector--insert-inspect-button elem)
+           (newline))
+	 (insert-button "[More]"
+			'action (let ((pos (point)))
+				  (lambda (btn)
+				    (ignore btn)
+				    (setq buffer-read-only nil)
+				    (goto-char pos)
+				    (delete-char (length "[More]"))
+				    (funcall cont)
+				    (setq buffer-read-only nil)
+				    ))
+			'follow-link t))))) 
    (t ;; It is a cons cell
     (inspector--insert-title "Cons cell")
     (insert "CAR: ")
