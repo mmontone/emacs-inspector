@@ -236,6 +236,15 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (inspector--insert-inspect-button
        (cl-struct-slot-value (type-of object) (car slot) object))
       (newline)))
+   ((recordp object)
+    (inspector--insert-title (format "%s record" (type-of object)))
+    (inspector--insert-label "Members")
+    (newline)
+    (cl-do ((i 1 (cl-incf i)))
+        ((= i (length object)))
+      (inspector--insert-inspect-button
+       (aref object i))
+      (newline)))
    ((functionp object)
     (inspector--insert-title "Function")
     (inspector--insert-label "Name")
