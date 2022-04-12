@@ -172,6 +172,22 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (when slice
       (funcall function slice (lambda () (inspector--do-with-slicer slicer function))))))
 
+(defun inspector--do-with-slicer-and-more-button (slicer function)
+  (inspector--do-with-slicer
+   slicer
+   (lambda (slice cont)
+     (funcall function slice cont)
+     (insert-button "[More]"
+		    'action (let ((pos (point)))
+			      (lambda (btn)
+				(ignore btn)
+				(setq buffer-read-only nil)
+				(goto-char pos)
+				(delete-char (length "[More]"))
+				(funcall cont)
+				(setq buffer-read-only nil)))
+			'follow-link t))))
+
 (cl-defgeneric inspect-object (object)
   "Main generic interface for filling inspector buffers for the different types of OBJECT.")
 
@@ -294,7 +310,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (inspector--insert-title "Proper list")
     (let ((i 0)
 	  (j 0))
-      (inspector--do-with-slicer
+      (inspector--do-with-slicer-and-more-button
        (lambda ()
 	 (when (< i (length cons))
 	   (subseq cons i (min (incf i inspector-slice-size)
@@ -304,18 +320,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
            (insert (format "%d: " j))
 	   (incf j)
            (inspector--insert-inspect-button elem)
-           (newline))
-	 (insert-button "[More]"
-			'action (let ((pos (point)))
-				  (lambda (btn)
-				    (ignore btn)
-				    (setq buffer-read-only nil)
-				    (goto-char pos)
-				    (delete-char (length "[More]"))
-				    (funcall cont)
-				    (setq buffer-read-only nil)
-				    ))
-			'follow-link t))))) 
+           (newline))))))
    (t ;; It is a cons cell
     (inspector--insert-title "Cons cell")
     (insert "CAR: ")
