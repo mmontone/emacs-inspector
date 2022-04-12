@@ -391,10 +391,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (inspector--insert-label "Values")
       (newline)
       (maphash (lambda (key value)
-		 (inspector--insert-inspect-button key)
-		 (insert ": ")
-		 (inspector--insert-inspect-button value)
-		 (newline))
+                 (inspector--insert-inspect-button key)
+                 (insert ": ")
+                 (inspector--insert-inspect-button value)
+                 (newline))
                hash-table))))
 
 ;;--- Buffers ------------------------------
@@ -481,9 +481,9 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive)
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe))
-	 (frame (backtrace-frame nframe)))
+         (frame (backtrace-frame nframe)))
     (inspector-inspect (list :frame frame
-			     :locals (inspector--alist-to-plist locals)))))
+                             :locals (inspector--alist-to-plist locals)))))
 
 ;;--------- Inspector mode ---------------------------------
 
