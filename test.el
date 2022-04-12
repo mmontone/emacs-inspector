@@ -55,3 +55,14 @@
 (inspector-inspect (record 'foo 23 [bar baz] "rats"))
 
 (inspector-inspect (make-finalizer #'print))
+
+(defclass person ()
+  ((name :initform "John")
+   (age :initform 40)))
+
+(inspector-inspect (make-instance 'person))
+
+(cl-defstruct rectangle
+  x y)
+
+(inspector-inspect (make-rectangle :x 30 :y 40))
