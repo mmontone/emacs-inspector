@@ -252,6 +252,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (newline)
     (inspector--insert-label "Arglist")
     (inspector--insert-value (elisp-get-fnsym-args-string object)))
+   ((eq (type-of object) 'finalizer)
+    (inspector--insert-title "Finalizer")
+    (inspector--insert-value (inspector--princ-to-string object)))
    (t (error "Cannot inspect object: %s" object))))
 
 (cl-defmethod inspect-object ((cons cons))
