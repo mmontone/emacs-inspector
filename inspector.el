@@ -498,6 +498,9 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   "Quit the Emacs inspector."
   (interactive)
   (setq inspector-history nil)
+  (if (window-prev-buffers)
+        (quit-window)
+      (delete-window))
   (kill-buffer "*inspector*"))
 
 (defun inspector-pop ()
