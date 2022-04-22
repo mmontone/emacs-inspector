@@ -458,12 +458,20 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (progn
       (inspector--insert-label "Values")
       (newline)
-      (maphash (lambda (key value)
-                 (inspector--insert-inspect-button key)
-                 (insert ": ")
-                 (inspector--insert-inspect-button value)
-                 (newline))
-               hash-table))))
+      (let ((i 0)
+            (keys (hash-table-keys hash-table)))
+        (inspector--do-with-slicer-and-more-button
+         (lambda ()
+           (when (< i (length keys))
+             (cl-subseq keys i (min (cl-incf i inspector-slice-size)
+                                    (length keys)))))
+         (lambda (slice cont)
+           (ignore cont)
+           (dolist (key slice)
+             (inspector--insert-inspect-button key)
+             (insert ": ")
+             (inspector--insert-inspect-button (gethash key hash-table))
+             (newline))))))))
 
 ;;--- Buffers ------------------------------
 
