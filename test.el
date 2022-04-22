@@ -72,6 +72,7 @@
 (setq inspector-slice-size 10)
 (inspector-inspect (cl-loop for i from 1 to 101 collect i))
 (inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
+(inspector-inspect (cl-loop for i from 1 to 101 collect (gensym) collect i))
 
 (inspector-inspect (apply 'vector (cl-loop for i from 1 to 1000 collect i)))
 
