@@ -479,7 +479,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (setq * object)
       (inspect-object object)
       (setq buffer-read-only t)
-      (display-buffer buffer)
+      (switch-to-buffer-other-window buffer)
       buffer)))
 
 (defun inspector-inspect (object &optional preserve-history)
