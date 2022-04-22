@@ -478,8 +478,8 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (setq inspector-inspected-object object)
       (setq * object)
       (inspect-object object)
+      (goto-char 0)
       (setq buffer-read-only t)
-      (switch-to-buffer-other-window buffer)
       buffer)))
 
 (defun inspector-inspect (object &optional preserve-history)
@@ -487,6 +487,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
 When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((current-inspected-object inspector-inspected-object)
         (buffer (inspector--basic-inspect object)))
+    (when (not preserve-history) (switch-to-buffer-other-window buffer))
     (with-current-buffer buffer
       (unless preserve-history
         (setq inspector-history nil))
