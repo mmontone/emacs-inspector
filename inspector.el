@@ -189,11 +189,12 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                     'follow-link t))))
 
 (cl-defgeneric inspect-object (object)
-  "Main generic interface for filling inspector buffers for the different types of OBJECT.")
+  "Render inspector buffer for OBJECT.")
 
 ;;--------- Object inspectors ----------------------------------
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
+  "Render inspector buffer for EIEIO CLASS."
   (inspector--insert-title (format "%s class" (eieio-class-name class)))
   (insert "Direct superclasses: ")
   (dolist (superclass (eieio-class-parents class))
@@ -212,31 +213,35 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (insert " ")))
 
 (cl-defmethod inspect-object ((object (eql t)))
+  "Render inspector buffer for boolean T."
   (ignore object)
   (inspector--insert-title "Boolean")
   (insert "Value: t"))
 
 (cl-defmethod inspect-object ((object (eql nil)))
+  "Render inspector buffer for NIL object."
   (ignore object)
   (inspector--insert-title "nil")
   (insert "Value: nil"))
 
-(cl-defmethod inspect-object ((object symbol))
+(cl-defmethod inspect-object ((symbol symbol))
+  "Render inspector buffer for SYMBOL."
   (inspector--insert-title "Symbol")
   (inspector--insert-label "Name")
-  (inspector--insert-value (symbol-name object))
+  (inspector--insert-value (symbol-name symbol))
   (newline)
   (inspector--insert-label "Is bound")
-  (inspector--insert-value (format "%s" (boundp object)))
+  (inspector--insert-value (format "%s" (boundp symbol)))
   (newline)
   (inspector--insert-label "Function")
-  (inspector--insert-inspect-button (symbol-function object))
+  (inspector--insert-inspect-button (symbol-function symbol))
   (newline)
   (inspector--insert-label "Property list")
-  (inspector--insert-inspect-button (symbol-plist object))
+  (inspector--insert-inspect-button (symbol-plist symbol))
   (newline))
 
 (cl-defmethod inspect-object ((object t))
+  "Render inspector buffer for OBJECT."
   (cond
    ((eieio-object-p object)
     (insert "Instance of ")
@@ -284,6 +289,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
    (t (error "Cannot inspect object: %s" object))))
 
 (cl-defmethod inspect-object ((cons cons))
+  "Inspect a CONS object."
   (cond
    ((and inspector-use-specialized-inspectors-for-lists
          (inspector--plistp cons))
@@ -303,9 +309,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (inspector--do-with-slicer-and-more-button
        (lambda ()
          (when (< i (length cons))
-           (subseq cons i (min (incf i inspector-slice-size)
-                               (length cons)))))
+           (cl-subseq cons i (min (cl-incf i inspector-slice-size)
+                                  (length cons)))))
        (lambda (slice cont)
+         (ignore cont)
          (dolist (cons slice)
            (insert "(")
            (inspector--insert-inspect-button (car cons))
@@ -320,12 +327,13 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
       (inspector--do-with-slicer-and-more-button
        (lambda ()
          (when (< i (length cons))
-           (subseq cons i (min (incf i inspector-slice-size)
-                               (length cons)))))
+           (cl-subseq cons i (min (cl-incf i inspector-slice-size)
+                                  (length cons)))))
        (lambda (slice cont)
+         (ignore cont)
          (dolist (elem slice)
            (insert (format "%d: " j))
-           (incf j)
+           (cl-incf j)
            (inspector--insert-inspect-button elem)
            (newline))))))
    (t ;; It is a cons cell
@@ -337,22 +345,24 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (inspector--insert-inspect-button (cdr cons)))))
 
 (cl-defmethod inspect-object ((string string))
+  "Render inspector buffer for STRING."
   (inspector--insert-title "String")
   (prin1 string (current-buffer)))
 
 (cl-defmethod inspect-object ((array array))
+  "Render inspector buffer for ARRAY."
   (inspector--insert-title (inspector--princ-to-string (type-of array)))
-  (let ((length (length array))
-        (i 0))
+  (let ((length (length array)))
     (insert (format "Length: %s" length))
     (newline 2)
     (let ((i 0))
       (inspector--do-with-slicer-and-more-button
        (lambda ()
          (when (< i length)
-           (cons i (1- (min (incf i inspector-slice-size)
+           (cons i (1- (min (cl-incf i inspector-slice-size)
                             length)))))
        (lambda (slice cont)
+         (ignore cont)
          (cl-loop for k from (car slice) to (cdr slice)
                   do
                   (insert (format "%d: " k))
@@ -360,6 +370,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                   (newline)))))))
 
 (cl-defmethod inspect-object ((buffer buffer))
+  "Render inspector buffer for Emacs BUFFER."
   (inspector--insert-title (prin1-to-string buffer))
   (inspector--insert-label "Name")
   (inspector--insert-inspect-button (buffer-name buffer))
@@ -378,6 +389,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
     (inspector--insert-inspect-button cursor-position)))
 
 (cl-defmethod inspect-object ((window window))
+  "Render inspector buffer for Emacs WINDOW."
   (inspector--insert-title (prin1-to-string window))
   (inspector--insert-label "Parent")
   (inspector--insert-inspect-button (window-parent window))
@@ -392,6 +404,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-inspect-button (window-frame window)))
 
 (cl-defmethod inspect-object ((frame frame))
+  "Render inspector buffer for Emacs FRAME."
   (inspector--insert-title (prin1-to-string frame))
   (inspector--insert-label "First window")
   (inspector--insert-inspect-button (frame-first-window frame))
@@ -400,6 +413,7 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-inspect-button (frame-parameters frame)))
 
 (cl-defmethod inspect-object ((overlay overlay))
+  "Render inspector buffer for Emacs OVERLAY."
   (inspector--insert-title (prin1-to-string overlay))
   (inspector--insert-label "Buffer")
   (inspector--insert-inspect-button (overlay-buffer overlay))
@@ -414,11 +428,13 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
   (inspector--insert-inspect-button (overlay-properties overlay)))
 
 (cl-defmethod inspect-object ((number number))
+  "Render inspector buffer for NUMBER."
   (inspector--insert-title (inspector--princ-to-string (type-of number)))
   (inspector--insert-label "Value")
   (insert (inspector--princ-to-string number)))
 
 (cl-defmethod inspect-object ((integer integer))
+  "Render inspector buffer for INTEGER."
   (inspector--insert-title (inspector--princ-to-string (type-of integer)))
   (insert "Integer: ")
   (princ integer (current-buffer))
@@ -499,8 +515,8 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive)
   (setq inspector-history nil)
   (if (window-prev-buffers)
-        (quit-window)
-      (delete-window))
+      (quit-window)
+    (delete-window))
   (kill-buffer "*inspector*"))
 
 (defun inspector-pop ()
