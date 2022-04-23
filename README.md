@@ -42,6 +42,8 @@ This is the [el-get](https://www.emacswiki.org/emacs/el-get "el-get") recipe:
 Also, `M-x forward-button` and `M-x backward-button` are conveniently bound to `n` and `p`. 
 They can be used for fast navigation through the buttons that the inspector displays.
 
+Finally, you can use `M-x eval-expression` bound to letter `e`, to evaluate an elisp expression using the object currently being inspected (it is bound to `*`).
+
 ### From the Emacs debugger
 
 When on an Emacs debugging backtrace, press letter `i` to inspect the pointed frame and its local variables.
