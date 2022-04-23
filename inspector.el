@@ -518,6 +518,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
 
 ;;------ Commands -----------------------------
 
+;;;###autoload
 (defun inspect-expression (exp)
   "Evaluate and inspect EXP expression."
   (interactive (list (read--expression "Eval and inspect: ")))
@@ -534,6 +535,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
       (setq buffer-read-only t)
       buffer)))
 
+;;;###autoload
 (defun inspector-inspect (object &optional preserve-history)
   "Top-level function for inspecting OBJECTs.
 When PRESERVE-HISTORY is T, inspector history is not cleared."
@@ -562,6 +564,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (let ((object (pop inspector-history)))
       (inspector--basic-inspect object))))
 
+;;;###autoload
 (defun inspect-last-sexp ()
   "Evaluate and inspect sexp before point."
   (interactive)
@@ -570,6 +573,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 
 ;;-- Inspection from Emacs debugger
 
+;;;###autoload
 (defun debugger-inspect-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
   (interactive)
@@ -577,6 +581,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
          (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
 
+;;;###autoload
 (defun debugger-inspect-current-frame ()
   "Inspect current frame in debugger backtrace."
   (interactive)
@@ -584,6 +589,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
          (frame (backtrace-frame nframe)))
     (inspector-inspect frame)))
 
+;;;###autoload
 (defun debugger-inspect-frame-and-locals ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
