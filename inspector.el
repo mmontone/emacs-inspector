@@ -572,9 +572,11 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
-    (define-key map (kbd "q") 'inspector-quit)
-    (define-key map (kbd "l") 'inspector-pop)
-    (define-key map (kbd "e") 'eval-expression)
+    (define-key map "q" 'inspector-quit)
+    (define-key map "l" 'inspector-pop)
+    (define-key map "e" 'eval-expression)
+    (define-key map "n" 'forward-button)
+    (define-key map "p" 'backward-button)
     map))
 
 (easy-menu-define
