@@ -294,6 +294,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
    ((and inspector-use-specialized-inspectors-for-lists
          (inspector--plistp cons))
     (inspector--insert-title "Property list")
+    (inspector--insert-label "Length")
+    (insert (inspector--princ-to-string (length cons)))
+    (newline 2)
     (let ((plist (cl-copy-list cons)))
       (while plist
         (let ((key (pop plist)))
@@ -305,6 +308,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
    ((and inspector-use-specialized-inspectors-for-lists
          (inspector--alistp cons))
     (inspector--insert-title "Association list")
+    (inspector--insert-label "Length")
+    (insert (inspector--princ-to-string (length cons)))
+    (newline 2)
+
     (let ((i 0))
       (inspector--do-with-slicer-and-more-button
        (lambda ()
@@ -322,6 +329,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
            (newline))))))
    ((inspector--proper-list-p cons)
     (inspector--insert-title "Proper list")
+    (inspector--insert-label "Length")
+    (insert (inspector--princ-to-string (length cons)))
+    (newline 2)
     (let ((i 0)
           (j 0))
       (inspector--do-with-slicer-and-more-button
