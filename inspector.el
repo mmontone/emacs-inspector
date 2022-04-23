@@ -134,7 +134,7 @@
 
 (defun inspector--insert-horizontal-line (&rest width)
   "Insert an horizontal line with width WIDTH."
-  (insert (make-string (or width 80) ?\u2500)))
+  (insert (make-string (or width (window-text-width)) ?\u2500)))
 
 (defun inspector--insert-label (label)
   "Insert an inspector label."
