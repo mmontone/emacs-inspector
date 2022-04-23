@@ -168,25 +168,32 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                  'follow-link t))
 
 (defun inspector--do-with-slicer (slicer function)
+  "Use SLICER and call FUNCTION on the resulting slice.
+SLICE should be a function that returns a slice of some data.
+FUNCTION is passed the resulting slice and a continuation function that when called continues the consumption of slices of data, until there are no more slices (the returned slice is NIL)."
   (let ((slice (funcall slicer)))
     (when slice
-      (funcall function slice (lambda () (inspector--do-with-slicer slicer function))))))
+      (funcall function slice
+               (lambda () (inspector--do-with-slicer slicer function))))))
 
 (defun inspector--do-with-slicer-and-more-button (slicer function)
+  "Apply the SLICER function and apply FUNCTION to the resulting slice.
+When FUNCTION returns not NIL, adds a [More] button that inserts the next slice in buffer."
   (inspector--do-with-slicer
    slicer
    (lambda (slice cont)
-     (funcall function slice cont)
-     (insert-button "[More]"
-                    'action (let ((pos (point)))
-                              (lambda (btn)
-                                (ignore btn)
-                                (setq buffer-read-only nil)
-                                (goto-char pos)
-                                (delete-char (length "[More]"))
-                                (funcall cont)
-                                (setq buffer-read-only nil)))
-                    'follow-link t))))
+     (let ((more-p (funcall function slice cont)))
+       (when more-p
+         (insert-button "[More]"
+                        'action (let ((pos (point)))
+                                  (lambda (btn)
+                                    (ignore btn)
+                                    (setq buffer-read-only nil)
+                                    (goto-char pos)
+                                    (delete-char (length "[More]"))
+                                    (funcall cont)
+                                    (setq buffer-read-only nil)))
+                        'follow-link t))))))
 
 (cl-defgeneric inspect-object (object)
   "Render inspector buffer for OBJECT.")
@@ -326,7 +333,9 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
            (insert " . ")
            (inspector--insert-inspect-button (cdr cons))
            (insert ")")
-           (newline))))))
+           (newline))
+         ;; A [more] button is inserted or not depending on the boolean returned here:
+         (< i (length cons))))))
    ((inspector--proper-list-p cons)
     (inspector--insert-title "Proper list")
     (inspector--insert-label "Length")
@@ -345,7 +354,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
            (insert (format "%d: " j))
            (cl-incf j)
            (inspector--insert-inspect-button elem)
-           (newline))))))
+           (newline))
+	 ;; A [more] button is inserted or not depending on the boolean returned here:
+         (< i (length cons))
+	 ))))
    (t ;; It is a cons cell
     (inspector--insert-title "Cons cell")
     (insert "CAR: ")
@@ -377,7 +389,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
                   do
                   (insert (format "%d: " k))
                   (inspector--insert-inspect-button (aref array k))
-                  (newline)))))))
+                  (newline))
+	 ;; Insert [more] button?:
+	 (< i length)
+	 )))))
 
 (cl-defmethod inspect-object ((buffer buffer))
   "Render inspector buffer for Emacs BUFFER."
@@ -481,7 +496,10 @@ If LABEL has a value, then it is used as button label.  Otherwise, button label 
              (inspector--insert-inspect-button key)
              (insert ": ")
              (inspector--insert-inspect-button (gethash key hash-table))
-             (newline))))))))
+             (newline))
+	   ;; Insert [more] button?
+	   (< i (length keys))
+	   ))))))
 
 ;;--- Buffers ------------------------------
 
