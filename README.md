@@ -39,8 +39,8 @@ This is the [el-get](https://www.emacswiki.org/emacs/el-get "el-get") recipe:
 * `M-x inspector-pop` bound to letter `l`, to navigate to previous object.
 * `M-x inspector-quit` bound to letter `q`, to exit the inspector.
 
-Also, `M-x forward-button` and `M-x backward-button` are bound to `n` and `p`. 
-Those can be used for fast navigation through the buttons that the inspector displays.
+Also, `M-x forward-button` and `M-x backward-button` are conveniently bound to `n` and `p`. 
+They can be used for fast navigation through the buttons that the inspector displays.
 
 ### From the Emacs debugger
 
