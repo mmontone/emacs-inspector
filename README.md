@@ -40,7 +40,7 @@ This is the [el-get](https://www.emacswiki.org/emacs/el-get "el-get") recipe:
 * `M-x inspector-quit` bound to letter `q`, to exit the inspector.
 
 Also, `M-x forward-button` and `M-x backward-button` are conveniently bound to `n` and `p`. 
-They can be used for fast navigation through the buttons that the inspector displays.
+They can be used for fast navigation across the buttons that the inspector displays.
 
 Finally, you can use `M-x eval-expression` bound to letter `e`, to evaluate an elisp expression using the object currently being inspected (it is bound to `*`).
 
