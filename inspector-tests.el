@@ -1,10 +1,36 @@
-;; Test inspector on all data types  -*- lexical-binding: t; -*-
+;; inspector-tests.el --- Tests for Emacs inspector  -*- lexical-binding: t; -*-
+
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Programming-Types.html
 
-;; FIXME: Add copyright&license blurbs.
+;; Copyright (C) 2021 Mariano Montone
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; URL: https://github.com/mmontone/emacs-inspector
+;; Keywords: debugging, tool, emacs-lisp, development
+;; Version: 0.1
+;; Package-Requires: ((emacs "25"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Tool for inspection of Emacs Lisp objects.
+
+;;; Code:
+
 ;; FIXME: Loading an ELisp file should not have any "visible" side effect.
 ;; The best may to fix this here is likely to use `ert-deftest'.
-;; FIXME: Change the file's name to avoid clashes with other packages.
 
 (require 'inspector)
 
@@ -80,4 +106,8 @@
 (inspector-inspect (cl-loop for i from 1 to 101 collect (gensym) collect i))
 
 (inspector-inspect (apply #'vector (cl-loop for i from 1 to 1000 collect i)))
+
+(provide 'inspector-tests)
+
+;;; inspector-tests.el ends here
 
