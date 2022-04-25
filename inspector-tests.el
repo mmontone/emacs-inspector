@@ -33,10 +33,28 @@
 ;; The best may to fix this here is likely to use `ert-deftest'.
 
 (require 'inspector)
+(require 'ert)
 
-(inspector-inspect 22)
-(inspector-inspect 2.22)
-(inspector-inspect ?a)
+(ert-deftest inspector-tests--inspect-integer-test ()
+  (inspector-inspect 22)
+  (let ((buffer-string (buffer-string)))
+    (should (search "22" buffer-string))
+    (should (search "integer" buffer-string)))
+  (inspector-quit))
+
+(ert-deftest inspector-tests--inspect-float-test ()
+  (inspector-inspect 2.22)
+  (let ((buffer-string (buffer-string)))
+    (should (search "2.22" buffer-string))
+    (should (search "float" buffer-string)))
+  (inspector-quit))
+
+(ert-deftest inspector-tests--inspect-character-test ()
+  (inspector-inspect ?a)
+  (let ((buffer-string (buffer-string)))
+    (should (search "character" buffer-string))
+    (inspector-quit)))
+
 (inspector-inspect 'abcd)
 (inspector-inspect :abcd)
 (inspector-inspect '(1 2 3))

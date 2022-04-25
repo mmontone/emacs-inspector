@@ -462,7 +462,7 @@ slice in buffer."
   (inspector--insert-label "integer")
   (insert (inspector--princ-to-string integer))
   (newline)
-  (inspector--insert-label "char")
+  (inspector--insert-label "character")
   (insert (inspector--princ-to-string (char-to-string integer))))
 
 (cl-defmethod inspect-object ((hash-table hash-table))
