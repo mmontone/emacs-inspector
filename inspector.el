@@ -159,18 +159,20 @@
 
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
-If LABEL has a value, then it is used as button label.  Otherwise, button label is the printed representation of OBJECT."
+If LABEL has a value, then it is used as button label.
+Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (inspector--princ-to-string label))
                      (inspector--print-truncated object))
-                 'action (lambda (btn)
-                           (ignore btn)
+                 'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
 
 (defun inspector--do-with-slicer (slicer function)
   "Use SLICER and call FUNCTION on the resulting slice.
 SLICE should be a function that returns a slice of some data.
-FUNCTION is passed the resulting slice and a continuation function that when called continues the consumption of slices of data, until there are no more slices (the returned slice is NIL)."
+FUNCTION is passed the resulting slice and a continuation function that when
+called continues the consumption of slices of data, until there are no more
+slices (the returned slice is nil)."
   (let ((slice (funcall slicer)))
     (when slice
       (funcall function slice
@@ -178,7 +180,8 @@ FUNCTION is passed the resulting slice and a continuation function that when cal
 
 (defun inspector--do-with-slicer-and-more-button (slicer function)
   "Apply the SLICER function and apply FUNCTION to the resulting slice.
-When FUNCTION returns not NIL, adds a [More] button that inserts the next slice in buffer."
+When FUNCTION returns non-nil, adds a [More] button that inserts the next
+slice in buffer."
   (inspector--do-with-slicer
    slicer
    (lambda (slice cont)
@@ -186,8 +189,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
        (when more-p
          (insert-button "[more]"
                         'action (let ((pos (point)))
-                                  (lambda (btn)
-                                    (ignore btn)
+                                  (lambda (_btn)
                                     (setq buffer-read-only nil)
                                     (goto-char pos)
                                     (delete-char (length "[More]"))
@@ -219,15 +221,13 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
      (eieio-class-name subclass) (eieio-class-name subclass))
     (insert " ")))
 
-(cl-defmethod inspect-object ((object (eql t)))
+(cl-defmethod inspect-object ((_object (eql t)))
   "Render inspector buffer for boolean T."
-  (ignore object)
   (inspector--insert-title "boolean")
   (insert "value: t"))
 
-(cl-defmethod inspect-object ((object (eql nil)))
-  "Render inspector buffer for NIL object."
-  (ignore object)
+(cl-defmethod inspect-object ((_object (eql nil)))
+  "Render inspector buffer for nil object."
   (inspector--insert-title "nil")
   (insert "value: nil"))
 
@@ -325,8 +325,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
          (when (< i (length cons))
            (cl-subseq cons i (min (cl-incf i inspector-slice-size)
                                   (length cons)))))
-       (lambda (slice cont)
-         (ignore cont)
+       (lambda (slice _cont)
          (dolist (cons slice)
            (insert "(")
            (inspector--insert-inspect-button (car cons))
@@ -348,8 +347,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
          (when (< i (length cons))
            (cl-subseq cons i (min (cl-incf i inspector-slice-size)
                                   (length cons)))))
-       (lambda (slice cont)
-         (ignore cont)
+       (lambda (slice _cont)
          (dolist (elem slice)
            (insert (format "%d: " j))
            (cl-incf j)
@@ -384,8 +382,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
          (when (< i length)
            (cons i (1- (min (cl-incf i inspector-slice-size)
                             length)))))
-       (lambda (slice cont)
-         (ignore cont)
+       (lambda (slice _cont)
          (cl-loop for k from (car slice) to (cdr slice)
                   do
                   (insert (format "%d: " k))
@@ -489,8 +486,7 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
            (when (< i (length keys))
              (cl-subseq keys i (min (cl-incf i inspector-slice-size)
                                     (length keys)))))
-         (lambda (slice cont)
-           (ignore cont)
+         (lambda (slice _cont)
            (dolist (key slice)
              (inspector--insert-inspect-button key)
              (insert ": ")
@@ -522,9 +518,10 @@ When FUNCTION returns not NIL, adds a [More] button that inserts the next slice 
   "Evaluate and inspect EXP expression."
   (interactive (list (read--expression "Eval and inspect: ")))
 
-  (inspector-inspect (eval exp)))
+  (inspector-inspect (eval exp t)))
 
 (defun inspector--basic-inspect (object)
+  (defvar *)
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
       (setq inspector-inspected-object object)
@@ -601,15 +598,15 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;--------- Inspector mode ---------------------------------
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map (kbd "i") 'debugger-inspect-frame-and-locals)
+(define-key debugger-mode-map (kbd "i") #'debugger-inspect-frame-and-locals)
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
-    (define-key map "q" 'inspector-quit)
-    (define-key map "l" 'inspector-pop)
-    (define-key map "e" 'eval-expression)
-    (define-key map "n" 'forward-button)
-    (define-key map "p" 'backward-button)
+    (define-key map "q" #'inspector-quit)
+    (define-key map "l" #'inspector-pop)
+    (define-key map "e" #'eval-expression)
+    (define-key map "n" #'forward-button)
+    (define-key map "p" #'backward-button)
     map))
 
 (easy-menu-define

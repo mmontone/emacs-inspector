@@ -1,5 +1,10 @@
-;; Test inspector on all data types
+;; Test inspector on all data types  -*- lexical-binding: t; -*-
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Programming-Types.html
+
+;; FIXME: Add copyright&license blurbs.
+;; FIXME: Loading an ELisp file should not have any "visible" side effect.
+;; The best may to fix this here is likely to use `ert-deftest'.
+;; FIXME: Change the file's name to avoid clashes with other packages.
 
 (require 'inspector)
 
@@ -74,5 +79,5 @@
 (inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
 (inspector-inspect (cl-loop for i from 1 to 101 collect (gensym) collect i))
 
-(inspector-inspect (apply 'vector (cl-loop for i from 1 to 1000 collect i)))
+(inspector-inspect (apply #'vector (cl-loop for i from 1 to 1000 collect i)))
 
