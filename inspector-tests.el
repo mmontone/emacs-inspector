@@ -29,9 +29,6 @@
 
 ;;; Code:
 
-;; FIXME: Loading an ELisp file should not have any "visible" side effect.
-;; The best may to fix this here is likely to use `ert-deftest'.
-
 (require 'inspector)
 (require 'ert)
 
@@ -268,4 +265,3 @@
 (provide 'inspector-tests)
 
 ;;; inspector-tests.el ends here
-
