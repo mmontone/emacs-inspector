@@ -102,21 +102,44 @@
 
 (inspector-inspect (record 'foo 23 [bar baz] "rats"))
 
-(inspector-inspect (make-finalizer #'print))
+(ert-deftest inspector-tests--inspect-finalizer-test ()
+  (inspector-inspect (make-finalizer #'print)))
 
-(inspector-inspect (make-button 0 10))
-(inspector-inspect (make-overlay 0 10))
+(ert-deftest inspector-tests--overlays-test ()
+  (inspector-inspect (make-button 0 10))
+  (let ((buffer-string (buffer-string)))
+    (should (search "overlay" buffer-string)))
+  (inspector-quit)
+  (inspector-inspect (make-overlay 0 10))
+  (let ((buffer-string (buffer-string)))
+    (should (search "overlay" buffer-string)))
+  (inspector-quit))
 
-(defclass person ()
+(defclass inspector-tests--person ()
   ((name :initform "John")
    (age :initform 40)))
 
-(inspector-inspect (make-instance 'person))
+(ert-deftest inspector-tests--inspect-class-test ()
+  (inspector-inspect (make-instance 'inspector-tests--person))
+  (let ((buffer-string (buffer-string)))
+    (should (search "name" buffer-string))
+    (should (search "John" buffer-string))
+    (should (search "age" buffer-string))
+    (should (search "40" buffer-string))
+    (inspector-quit)))
+    
 
-(cl-defstruct rectangle
+(cl-defstruct inspector-tests--rectangle
   x y)
 
-(inspector-inspect (make-rectangle :x 30 :y 40))
+(ert-deftest inspector-tests--inspect-struct-test ()
+  (inspector-inspect (make-inspector-tests--rectangle :x 30 :y 40))
+  (let ((buffer-string (buffer-string)))
+    (should (search "x" buffer-string))
+    (should (search "y" buffer-string))
+    (should (search "30" buffer-string))
+    (should (search "40" buffer-string))
+    (inspector-quit)))
 
 (setq inspector-slice-size 10)
 (inspector-inspect (cl-loop for i from 1 to 101 collect i))
