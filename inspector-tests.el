@@ -53,15 +53,47 @@
   (inspector-inspect ?a)
   (let ((buffer-string (buffer-string)))
     (should (search "character" buffer-string))
+    (should (search "97" buffer-string))
     (inspector-quit)))
 
-(inspector-inspect 'abcd)
-(inspector-inspect :abcd)
-(inspector-inspect '(1 2 3))
-(inspector-inspect [1 "two" (three)])
+(ert-deftest inspector-tests--inspect-symbol-test ()
+  (inspector-inspect 'abcd)
+  (let ((buffer-string (buffer-string)))
+    (should (search "abcd" buffer-string))
+    (should (search "symbol" buffer-string))
+    (inspector-quit))
 
-;; Long lists need to be sliced:
-(inspector-inspect (cl-loop for i from 1 to 3000 collect i))
+  (inspector-inspect :abcd)
+  (let ((buffer-string (buffer-string)))
+    (should (search "abcd" buffer-string))
+    (should (search "symbol" buffer-string))
+    (inspector-quit)))
+
+(ert-deftest inspector-tests--inspect-list-test ()
+  (inspector-inspect '(1 2 3))
+  (let ((buffer-string (buffer-string)))
+    (should (search "list" buffer-string))
+    (should (search "1" buffer-string))
+    (should (search "2" buffer-string))
+    (should (search "3" buffer-string))
+    (inspector-quit)))
+
+(ert-deftest inspector-tests--inspect-vector-test ()
+  (inspector-inspect [1 "two" (three)])
+  (let ((buffer-string (buffer-string)))
+    (should (search "vector" buffer-string))
+    (should (search "1" buffer-string))
+    (should (search "two" buffer-string))
+    (should (search "three" buffer-string))
+    (inspector-quit)))
+
+;; Long lists are to be sliced:
+(ert-deftest inspector-tests--inspect-long-list-test ()
+  (inspector-inspect (cl-loop for i from 1 to 3000 collect i))
+  (let ((buffer-string (buffer-string)))
+    (should (search "more" buffer-string))
+    (should (< (count-lines (point-min) (point-max)) 120)))
+  (inspector-quit))
 
 ;; Char tables
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Char_002dTable-Type.html
@@ -84,10 +116,18 @@
 
 (inspector-inspect (make-bool-vector 3 t))
 
-(inspector-inspect (let ((table (make-hash-table)))
-		     (puthash :a 22 table)
-		     (puthash :b "foo" table)
-		     table))
+(ert-deftest inspector-tests--inspect-hash-table-test ()
+  (inspector-inspect (let ((table (make-hash-table)))
+		       (puthash :a 22 table)
+		       (puthash :b "foo" table)
+		       table))
+  (let ((buffer-string (buffer-string)))
+    (should (search "hash-table" buffer-string))
+    (should (search "a" buffer-string))
+    (should (search "22" buffer-string))
+    (should (search "b" buffer-string))
+    (should (search "foo" buffer-string)))
+  (inspector-quit))
 
 (ert-deftest inspector-tests--inspect-function-test ()
   (inspector-inspect (symbol-function 'car))
