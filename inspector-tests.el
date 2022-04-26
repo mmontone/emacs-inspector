@@ -89,18 +89,32 @@
 		     (puthash :b "foo" table)
 		     table))
 
-(inspector-inspect #'print)
-(inspector-inspect #'(lambda () (print "hello")))
-(inspector-inspect (symbol-function 'car))
+(ert-deftest inspector-tests--inspect-function-test ()
+  (inspector-inspect (symbol-function 'car))
+  (let ((buffer-string (buffer-string)))
+    (should (search "function" buffer-string))
+    (should (search "car" buffer-string)))
+  (inspector-quit))
 
-(defun factorial (integer)
+(defun inspector-tests--factorial (integer)
   "Compute factorial of an integer."
   (if (= 1 integer) 1
-    (* integer (factorial (1- integer)))))
+    (* integer (inspector-tests--factorial (1- integer)))))
 
-(inspector-inspect (byte-compile 'factorial))
+(ert-deftest inspector-tests--inspect-compiled-function-test ()
+  (inspector-inspect (byte-compile 'inspector-tests--factorial))
+  (let ((buffer-string (buffer-string)))
+    (should (search "function" buffer-string)))
+  (inspector-quit))
 
-(inspector-inspect (record 'foo 23 [bar baz] "rats"))
+(ert-deftest inspector-tests--inspect-record-test ()
+  (inspector-inspect (record 'foo 23 [bar baz] "rats"))
+  (let ((buffer-string (buffer-string)))
+    (should (search "record" buffer-string))
+    (should (search "foo" buffer-string))
+    (should (search "23" buffer-string))
+    (should (search "rats" buffer-string)))
+  (inspector-quit))
 
 (ert-deftest inspector-tests--inspect-finalizer-test ()
   (inspector-inspect (make-finalizer #'print)))
