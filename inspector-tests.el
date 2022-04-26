@@ -97,24 +97,73 @@
 
 ;; Char tables
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Char_002dTable-Type.html
-(inspector-inspect ascii-case-table)
+(ert-deftest inspector-tests--inspect-char-table-test ()
+  (inspector-inspect ascii-case-table)
+  (let ((buffer-string (buffer-string)))
+    (should (search "char-table" buffer-string))
+    (inspector-quit))
 
-(inspector-inspect (make-category-set "al"))
+  (inspector-inspect (make-display-table))
+  (let ((buffer-string (buffer-string)))
+    (should (search "char-table" buffer-string))
+    (inspector-quit))
 
-(inspector-inspect (make-display-table))
+  (inspector-inspect (standard-syntax-table))
+  (let ((buffer-string (buffer-string)))
+    (should (search "char-table" buffer-string))
+    (inspector-quit)))
 
-(inspector-inspect (standard-syntax-table))
+(ert-deftest inspector-tests--inspect-bool-vector-test ()
+  (inspector-inspect (make-category-set "al"))
+  (let ((buffer-string (buffer-string)))
+    (should (search "bool-vector" buffer-string))
+    (inspector-quit)))
 
-(inspector-inspect nil)
+(ert-deftest inspector-tests--inspect-nil-test ()
+  (inspector-inspect nil)
+  (let ((buffer-string (buffer-string)))
+    (should (search "nil" buffer-string))
+    (inspector-quit)))
 
-(inspector-inspect (cons 1 2))
+(ert-deftest inspector-tests--inspect-cons-test ()
+  (inspector-inspect (cons 1 2))
+  (let ((buffer-string (buffer-string)))
+    (should (search "cons" buffer-string))
+    (should (search "1" buffer-string))
+    (should (search "2" buffer-string))
+    (inspector-quit)))
 
-(inspector-inspect '((a . 33) (b . 44)))
+(ert-deftest inspector-tests--inspect-alist-test ()
+  (inspector-inspect '((a . 33) (b . 44)))
+  (let ((buffer-string (buffer-string)))
+    (when inspector-use-specialized-inspectors-for-lists
+      (should (search "association list" buffer-string)))
+    (should (search "a" buffer-string))
+    (should (search "b" buffer-string))
+    (should (search "33" buffer-string))
+    (should (search "44" buffer-string))
+    (inspector-quit)))
 
-(inspector-inspect '(:a 33 :b 44))
-(inspector-inspect '(a 33 b 44))
+(ert-deftest inspecto-tests--inspect-plist-test ()
+  (inspector-inspect '(:a 33 :b 44))
+  (let ((buffer-string (buffer-string)))
+    (when inspector-use-specialized-inspectors-for-lists
+      (should (search "property list" buffer-string)))
+    (should (search "a" buffer-string))
+    (should (search "b" buffer-string))
+    (should (search "33" buffer-string))
+    (should (search "44" buffer-string))
+    (inspector-quit))
 
-(inspector-inspect (make-bool-vector 3 t))
+  (inspector-inspect '(a 33 b 44))
+  (let ((buffer-string (buffer-string)))
+    (when inspector-use-specialized-inspectors-for-lists
+      (should (search "property list" buffer-string)))
+    (should (search "a" buffer-string))
+    (should (search "b" buffer-string))
+    (should (search "33" buffer-string))
+    (should (search "44" buffer-string))
+    (inspector-quit)))
 
 (ert-deftest inspector-tests--inspect-hash-table-test ()
   (inspector-inspect (let ((table (make-hash-table)))
@@ -137,7 +186,7 @@
   (inspector-quit))
 
 (defun inspector-tests--factorial (integer)
-  "Compute factorial of an integer."
+  "Compute factorial of INTEGER."
   (if (= 1 integer) 1
     (* integer (inspector-tests--factorial (1- integer)))))
 
@@ -195,12 +244,26 @@
     (should (search "40" buffer-string))
     (inspector-quit)))
 
-(setq inspector-slice-size 10)
-(inspector-inspect (cl-loop for i from 1 to 101 collect i))
-(inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
-(inspector-inspect (cl-loop for i from 1 to 101 collect (gensym) collect i))
+(ert-deftest inspector-tests--slices-test ()
+  (let ((inspector-slice-size 10))
+    (inspector-inspect (cl-loop for i from 1 to 101 collect i))
+    (should (< (count-lines (point-min) (point-max)) 20))
+    (inspector-quit))
 
-(inspector-inspect (apply #'vector (cl-loop for i from 1 to 1000 collect i)))
+  (let ((inspector-slice-size 100))
+    (inspector-inspect (cl-loop for i from 1 to 101 collect (cons i (1+ i))))
+    (should (< (count-lines (point-min) (point-max)) 120))
+    (inspector-quit))
+
+  (let ((inspector-slice-size 100))
+    (inspector-inspect (cl-loop for i from 1 to 101 collect (gensym) collect i))
+    (should (< (count-lines (point-min) (point-max)) 120))
+    (inspector-quit))
+
+  (let ((inspector-slice-size 100))
+    (inspector-inspect (apply #'vector (cl-loop for i from 1 to 1000 collect i)))
+    (should (< (count-lines (point-min) (point-max)) 120))
+    (inspector-quit)))
 
 (provide 'inspector-tests)
 
