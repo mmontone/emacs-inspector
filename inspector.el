@@ -423,7 +423,14 @@ slice in buffer."
     (inspector--insert-inspect-button buffer-string)
     (newline)
     (inspector--insert-label "cursor position")
-    (inspector--insert-inspect-button cursor-position)))
+    (inspector--insert-inspect-button cursor-position)
+    (newline)
+    (inspector--insert-label "buffer file")
+    (inspector--insert-inspect-button (buffer-file-name buffer))
+    (newline)
+    (inspector--insert-label "readonly")
+    (inspector--insert-inspect-button (with-current-buffer buffer
+					buffer-read-only))))
 
 (cl-defmethod inspect-object ((window window))
   "Render inspector buffer for Emacs WINDOW."
