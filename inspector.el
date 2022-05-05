@@ -648,7 +648,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
             (setq-local tool-bar-map inspector-tool-bar-map)))
 
 ;; Better define and use a major mode?:
-(define-derived-mode inspector-mode emacs-lisp-mode
+(define-derived-mode inspector-mode fundamental-mode
   "Inspector mode")
 
 (provide 'inspector)
