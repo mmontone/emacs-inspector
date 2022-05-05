@@ -79,6 +79,11 @@
   "Emacs Lisp inspector faces."
   :group 'faces)
 
+(defface inspector-button-face
+  '((t :inherit link))
+  "Face for inspector buttons."
+  :group 'inspector-faces)
+
 (defface inspector-title-face
   '((t ()))
   "Face for title describing object."
@@ -124,6 +129,11 @@
   :type 'integer
   :group 'inspector)
 
+(define-button-type 'inspector-button
+  'follow-link t
+  'face 'inspector-button-face
+  'help-echo "Inspect object")
+
 ;;-------- Inspector code -------------------
 
 (defvar-local inspector-history nil
@@ -137,22 +147,24 @@
   (insert (make-string (or width (window-text-width)) ?\u2500)))
 
 (defun inspector--insert-label (label)
-  "Insert an inspector label."
+  "Show a LABEL in inspector buffer."
   (insert (propertize label 'face 'inspector-label-face))
   (insert ": "))
 
 (defun inspector--insert-value (value)
+  "Show a property VALUE in inspector buffer."
   (insert (propertize (inspector--princ-to-string value) 'face 'inspector-value-face)))
 
 (defun inspector--insert-title (title)
-  "Insert title for inspector."
+  "Insert TITLE for inspector."
   (insert (propertize title 'face 'inspector-title-face))
   (newline)
   (inspector--insert-horizontal-line)
   (newline))
 
 (defun inspector--print-truncated (object &optional end-column)
-  "Print OBJECT truncated.  END-COLUMN controls the truncation."
+  "Print OBJECT to a string, truncated.
+END-COLUMN controls the truncation."
   (truncate-string-to-width (prin1-to-string object)
                             (or end-column inspector-end-column)
                             nil nil t))
@@ -163,6 +175,7 @@ If LABEL has a value, then it is used as button label.
 Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (inspector--princ-to-string label))
                      (inspector--print-truncated object))
+		 :type 'inspector-button
                  'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
