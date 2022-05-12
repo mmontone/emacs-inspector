@@ -124,6 +124,11 @@
   :type 'boolean
   :group 'inspector)
 
+(defcustom inspector-use-font-lock-faces t
+  "Use font-lock faces in inspector, instead of button faces."
+  :type 'boolean
+  :group 'inspector)
+
 (defcustom inspector-slice-size 100
   "Size of sequence slices in inspector."
   :type 'integer
@@ -169,6 +174,29 @@ END-COLUMN controls the truncation."
                             (or end-column inspector-end-column)
                             nil nil t))
 
+(cl-defgeneric inspector--face-for-object (object)
+  "Return face to use for OBJECT.")
+
+(cl-defmethod inspector--face-for-object (object)
+  "Use builtin face by default for non matching OBJECTs."
+  (ignore object)
+  'inspector-button-face)
+
+(cl-defmethod inspector--face-for-object ((string string))
+  "Inspector face for STRING."
+  (ignore string)
+  font-lock-string-face)
+
+(cl-defmethod inspector--face-for-object ((symbol symbol))
+  "Inspector face for SYMBOLs."
+  (ignore symbol)
+  font-lock-constant-face)
+
+(cl-defmethod inspector--face-for-object ((integer integer))
+  "Inspector face for INTEGERs."
+  (ignore integer)
+  font-lock-constant-face))
+
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
 If LABEL has a value, then it is used as button label.
@@ -176,6 +204,9 @@ Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (inspector--princ-to-string label))
                      (inspector--print-truncated object))
 		 :type 'inspector-button
+		 'face (if inspector-use-font-lock-faces
+			   (inspector--face-for-object object)
+			 inspector-button-face)
                  'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
@@ -210,10 +241,10 @@ slice in buffer."
                                     (setq buffer-read-only nil)))
                         'follow-link t))))))
 
+;;--------- Object inspectors ----------------------------------
+
 (cl-defgeneric inspect-object (object)
   "Render inspector buffer for OBJECT.")
-
-;;--------- Object inspectors ----------------------------------
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
   "Render inspector buffer for EIEIO CLASS."
