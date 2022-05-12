@@ -208,7 +208,7 @@ Otherwise, button label is the printed representation of OBJECT."
 		 :type 'inspector-button
 		 'face (if inspector-use-font-lock-faces
 			   (inspector--face-for-object object)
-			 inspector-button-face)
+			 'inspector-button-face)
                  'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
