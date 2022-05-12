@@ -190,12 +190,14 @@ END-COLUMN controls the truncation."
 (cl-defmethod inspector--face-for-object ((symbol symbol))
   "Inspector face for SYMBOLs."
   (ignore symbol)
-  font-lock-constant-face)
+  (if (keywordp symbol)
+      font-lock-builtin-face
+    font-lock-variable-name-face))
 
 (cl-defmethod inspector--face-for-object ((integer integer))
   "Inspector face for INTEGERs."
   (ignore integer)
-  font-lock-constant-face))
+  nil)
 
 (defun inspector--insert-inspect-button (object &optional label)
   "Insert button for inspecting OBJECT.
