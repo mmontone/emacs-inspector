@@ -180,7 +180,7 @@ END-COLUMN controls the truncation."
 (cl-defmethod inspector--face-for-object (object)
   "Use builtin face by default for non matching OBJECTs."
   (ignore object)
-  'inspector-button-face)
+  'inspector-value-face)
 
 (cl-defmethod inspector--face-for-object ((string string))
   "Inspector face for STRING."
@@ -208,7 +208,7 @@ Otherwise, button label is the printed representation of OBJECT."
 		 :type 'inspector-button
 		 'face (if inspector-use-font-lock-faces
 			   (inspector--face-for-object object)
-			 'inspector-button-face)
+			 'inspector-value-face)
                  'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
