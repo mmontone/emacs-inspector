@@ -569,7 +569,7 @@ slice in buffer."
 
 ;;;###autoload
 (defun inspect-expression (exp)
-  "Evaluate and inspect EXP expression."
+  "Evaluate EXP and inspect its result."
   (interactive (list (read--expression "Eval and inspect: ")))
 
   (inspector-inspect (eval exp t)))
