@@ -6,8 +6,6 @@ Inspector tool for Emacs Lisp objects.
 
 Similar to inspectors available for Smalltalk and Common Lisp, but for Emacs Lisp.
 
-DEMO VIDEO: https://drive.google.com/file/d/1808JlDM0q-aW4woZQBscatxp6omIR2j8/view
-
 ![emacs-inspector.png](emacs-inspector.png "Emacs Inspector")
 
 ## Installation

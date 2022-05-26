@@ -1,6 +1,6 @@
 ;;; inspector.el --- Tool for inspection of Emacs Lisp objects.  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021 Mariano Montone
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
@@ -616,7 +616,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 
 ;;;###autoload
 (defun inspect-last-sexp ()
-  "Evaluate and inspect sexp before point."
+  "Evaluate sexp before point and inspect the result."
   (interactive)
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
@@ -624,7 +624,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;-- Inspection from Emacs debugger
 
 ;;;###autoload
-(defun debugger-inspect-locals ()
+(defun inspect-debugger-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
   (interactive)
   (let* ((nframe (debugger-frame-number))
@@ -632,7 +632,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (inspector-inspect (inspector--alist-to-plist locals))))
 
 ;;;###autoload
-(defun debugger-inspect-current-frame ()
+(defun inspect-debugger-current-frame ()
   "Inspect current frame in debugger backtrace."
   (interactive)
   (let* ((nframe (debugger-frame-number))
@@ -640,7 +640,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (inspector-inspect frame)))
 
 ;;;###autoload
-(defun debugger-inspect-frame-and-locals ()
+(defun inspect-debugger-frame-and-locals ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
   (let* ((nframe (debugger-frame-number))
@@ -652,7 +652,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;--------- Inspector mode ---------------------------------
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map (kbd "i") #'debugger-inspect-frame-and-locals)
+(define-key debugger-mode-map (kbd "i") #'inspect-debugger-frame-and-locals)
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
