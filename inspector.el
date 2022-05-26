@@ -248,11 +248,14 @@ slice in buffer."
 (cl-defgeneric inspect-object (object)
   "Render inspector buffer for OBJECT.
 
-Methods of this generic function are expected to specialize on the type of Emacs Lisp OBJECT being inspected, and write into the current-buffer.
-The current-buffer is presumed to be empty.
+Methods of this generic function are expected to specialize on the type of
+Emacs Lisp OBJECT being inspected, and write into the `current-buffer'.
+The `current-buffer' is presumed to be empty.
 An inspector buffer is expected to have a title, some properties and a body.
-See `inspector--insert-title', `inspector--insert-label' and `inspector--insert-value' for inserting title, and properties and its values.
-For linking to another object, `inspector--insert-inspect-button' is expected to be used."
+See `inspector--insert-title', `inspector--insert-label'
+and `inspector--insert-value' for inserting title,and properties and its values.
+For linking to another object, `inspector--insert-inspect-button'
+is expected to be used.")
 
 (cl-defmethod inspect-object ((class (subclass eieio-default-superclass)))
   "Render inspector buffer for EIEIO CLASS."
