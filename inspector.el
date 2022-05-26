@@ -205,10 +205,10 @@ If LABEL has a value, then it is used as button label.
 Otherwise, button label is the printed representation of OBJECT."
   (insert-button (or (and label (inspector--princ-to-string label))
                      (inspector--print-truncated object))
-		 :type 'inspector-button
-		 'face (if inspector-use-font-lock-faces
-			   (inspector--face-for-object object)
-			 'inspector-value-face)
+                 :type 'inspector-button
+                 'face (if inspector-use-font-lock-faces
+                           (inspector--face-for-object object)
+                         'inspector-value-face)
                  'action (lambda (_btn)
                            (inspector-inspect object t))
                  'follow-link t))
@@ -331,7 +331,7 @@ slice in buffer."
       (newline)))
    ((functionp object)
     (if (subrp object)
-	(inspector--insert-title "builtin function")
+        (inspector--insert-title "builtin function")
       (inspector--insert-title "function"))
     (inspector--insert-value (inspector--princ-to-string object))
     (newline)
@@ -400,9 +400,9 @@ slice in buffer."
            (cl-incf j)
            (inspector--insert-inspect-button elem)
            (newline))
-	 ;; A [more] button is inserted or not depending on the boolean returned here:
+         ;; A [more] button is inserted or not depending on the boolean returned here:
          (< i (length cons))
-	 ))))
+         ))))
    (t ;; It is a cons cell
     (inspector--insert-title "cons cell")
     (inspector--insert-label "car")
@@ -435,9 +435,9 @@ slice in buffer."
                   (insert (format "%d: " k))
                   (inspector--insert-inspect-button (aref array k))
                   (newline))
-	 ;; Insert [more] button?:
-	 (< i length)
-	 )))))
+         ;; Insert [more] button?:
+         (< i length)
+         )))))
 
 (cl-defmethod inspect-object ((buffer buffer))
   "Render inspector buffer for Emacs BUFFER."
@@ -463,7 +463,7 @@ slice in buffer."
     (newline)
     (inspector--insert-label "readonly")
     (inspector--insert-inspect-button (with-current-buffer buffer
-					buffer-read-only))))
+                                        buffer-read-only))))
 
 (cl-defmethod inspect-object ((window window))
   "Render inspector buffer for Emacs WINDOW."
@@ -546,9 +546,9 @@ slice in buffer."
              (insert ": ")
              (inspector--insert-inspect-button (gethash key hash-table))
              (newline))
-	   ;; Insert [more] button?
-	   (< i (length keys))
-	   ))))))
+           ;; Insert [more] button?
+           (< i (length keys))
+           ))))))
 
 ;;--- Buffers ------------------------------
 
