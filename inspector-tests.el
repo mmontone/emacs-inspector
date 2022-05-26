@@ -2,7 +2,7 @@
 
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Programming-Types.html
 
-;; Copyright (C) 2021 Mariano Montone
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
