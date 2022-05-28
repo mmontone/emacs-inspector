@@ -12,7 +12,7 @@ Similar to inspectors available for Smalltalk and Common Lisp, but for Emacs Lis
 
 This package is available from ELPA.
 
-`M-x package-install inspector RET`
+`M-x package-install RET inspector RET`
 
 ## Usage
 
