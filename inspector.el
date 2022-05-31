@@ -29,6 +29,7 @@
 
 (require 'eieio)
 (require 'debug)
+(require 'edebug)
 
 ;;---- Utils ----------
 
@@ -674,6 +675,14 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
          (frame (backtrace-frame nframe)))
     (inspector-inspect (list :frame frame
                              :locals (inspector--alist-to-plist locals)))))
+
+;; ----- edebug-mode---------------------------------------
+
+;;;###autoload
+(defun inspect-edebug-expression (expr)
+  "Evaluate EXPR in edebug-mode, and inspect the result."
+  (interactive "xInspect edebug expression: " edebug-mode)
+  (inspector-inspect (edebug-eval expr)))
 
 ;;--------- Inspector mode ---------------------------------
 
