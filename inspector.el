@@ -635,7 +635,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
-  (interactive)
+  (interactive nil debugger-mode)
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
@@ -643,7 +643,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-current-frame ()
   "Inspect current frame in debugger backtrace."
-  (interactive)
+  (interactive nil debugger-mode)
   (let* ((nframe (debugger-frame-number))
          (frame (backtrace-frame nframe)))
     (inspector-inspect frame)))
@@ -651,7 +651,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-frame-and-locals ()
   "Inspect current frame and locals in debugger backtrace."
-  (interactive)
+  (interactive nil debugger-mode)
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe))
          (frame (backtrace-frame nframe)))
