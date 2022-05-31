@@ -640,6 +640,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
          (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
 
+;;;###autoload
 (defun inspect-debugger-local (varname)
   "Inspect local variable named VARNAME of frame at point in debugger backtrace."
   (interactive
