@@ -687,15 +687,15 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;--------- Inspector mode ---------------------------------
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map (kbd "i") #'inspect-debugger-frame-and-locals)
+(keymap-set debugger-mode-map (kbd "i") #'inspect-debugger-frame-and-locals)
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
-    (define-key map "q" #'inspector-quit)
-    (define-key map "l" #'inspector-pop)
-    (define-key map "e" #'eval-expression)
-    (define-key map "n" #'forward-button)
-    (define-key map "p" #'backward-button)
+    (keymap-set map "q" #'inspector-quit)
+    (keymap-set map "l" #'inspector-pop)
+    (keymap-set map "e" #'eval-expression)
+    (keymap-set map "n" #'forward-button)
+    (keymap-set map "p" #'backward-button)
     map))
 
 (easy-menu-define
