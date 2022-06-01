@@ -1,5 +1,7 @@
 # EMACS-INSPECTOR
 
+![elpa-badge](https://elpa.gnu.org/packages/inspector.svg)
+
 ## Overview
 
 Inspector tool for Emacs Lisp objects.
