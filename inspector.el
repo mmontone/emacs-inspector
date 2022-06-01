@@ -676,6 +676,10 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (inspector-inspect (list :frame frame
                              :locals (inspector--alist-to-plist locals)))))
 
+;; Press letter 'i' in debugger backtrace to inspect locals.
+(when (not (keymap-lookup debugger-mode-map "i"))
+  (keymap-set debugger-mode-map "i" #'inspect-debugger-frame-and-locals))
+
 ;; ----- edebug-mode---------------------------------------
 
 ;;;###autoload
@@ -684,10 +688,10 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive "xInspect edebug expression: " edebug-mode)
   (inspector-inspect (edebug-eval expr)))
 
-;;--------- Inspector mode ---------------------------------
+(when (not (keymap-lookup edebug-mode-map "C-c C-i"))
+  (keymap-set edebug-mode-map "C-c C-i" #'inspect-edebug-expression))
 
-;; Press letter 'i' in debugger backtrace to inspect locals.
-(keymap-set debugger-mode-map (kbd "i") #'inspect-debugger-frame-and-locals)
+;;--------- Inspector mode ---------------------------------
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
