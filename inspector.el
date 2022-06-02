@@ -6,7 +6,7 @@
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, emacs-lisp, development
 ;; Version: 0.3
-;; Package-Requires: ((emacs "25"))
+;; Package-Requires: ((emacs "27"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -553,7 +553,7 @@ is expected to be used.")
          (lambda (slice _cont)
            (dolist (key slice)
              (inspector--insert-inspect-button key)
-             (insert ": ")
+             (insert " : ")
              (inspector--insert-inspect-button (gethash key hash-table))
              (newline))
            ;; Insert [more] button?
@@ -636,7 +636,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
-  (interactive nil debugger-mode)
+  (interactive)
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
@@ -651,8 +651,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 		       ;; The addition of 0 to the return value of (debugger-frame-number) is necessary here. Why?? Ugly hack ...
 		       ;; On Emacs 29.0.50 with native comp at least ..
 		       (let ((n (+ (debugger-frame-number) 0)))
-			 (mapcar #'car (backtrace--locals n))))))
-   debugger-mode)
+			 (mapcar #'car (backtrace--locals n)))))))
   (with-current-buffer "*Backtrace*"
     (let* ((n (debugger-frame-number))
 	   (locals (backtrace--locals n)))
@@ -661,7 +660,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-current-frame ()
   "Inspect current frame in debugger backtrace."
-  (interactive nil debugger-mode)
+  (interactive)
   (let* ((nframe (debugger-frame-number))
          (frame (backtrace-frame nframe)))
     (inspector-inspect frame)))
@@ -669,7 +668,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 ;;;###autoload
 (defun inspect-debugger-frame-and-locals ()
   "Inspect current frame and locals in debugger backtrace."
-  (interactive nil debugger-mode)
+  (interactive)
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe))
          (frame (backtrace-frame nframe)))
@@ -677,29 +676,28 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
                              :locals (inspector--alist-to-plist locals)))))
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(when (not (keymap-lookup debugger-mode-map "i"))
-  (keymap-set debugger-mode-map "i" #'inspect-debugger-frame-and-locals))
+(define-key debugger-mode-map "i" #'inspect-debugger-frame-and-locals)
 
 ;; ----- edebug-mode---------------------------------------
 
 ;;;###autoload
 (defun inspect-edebug-expression (expr)
   "Evaluate EXPR in edebug-mode, and inspect the result."
-  (interactive "xInspect edebug expression: " edebug-mode)
+  (interactive "xInspect edebug expression: ")
   (inspector-inspect (edebug-eval expr)))
 
-(when (not (keymap-lookup edebug-mode-map "C-c C-i"))
-  (keymap-set edebug-mode-map "C-c C-i" #'inspect-edebug-expression))
+;; Press 'C-i' to inspect expression in edebug-mode
+(define-key edebug-mode-map (kbd "C-c C-i") #'inspect-edebug-expression)
 
 ;;--------- Inspector mode ---------------------------------
 
 (defvar inspector-mode-map
   (let ((map (make-keymap)))
-    (keymap-set map "q" #'inspector-quit)
-    (keymap-set map "l" #'inspector-pop)
-    (keymap-set map "e" #'eval-expression)
-    (keymap-set map "n" #'forward-button)
-    (keymap-set map "p" #'backward-button)
+    (define-key map "q" #'inspector-quit)
+    (define-key map "l" #'inspector-pop)
+    (define-key map "e" #'eval-expression)
+    (define-key map "n" #'forward-button)
+    (define-key map "p" #'backward-button)
     map))
 
 (easy-menu-define
