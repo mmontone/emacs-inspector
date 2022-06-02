@@ -36,3 +36,5 @@ Finally, you can use `M-x eval-expression` bound to letter `e`, to evaluate an e
 ### From the Emacs debugger
 
 When on an Emacs debugging backtrace, press letter `i` to inspect the pointed frame and its local variables.
+
+When on edebug-mode, use `C-c C-i` for inspecting expressions in the debugger.
