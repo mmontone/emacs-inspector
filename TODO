@@ -1,0 +1,4 @@
+When ready to switch to Emacs 28 do:
+
+- Add mode to interactive expressions. See: https://lars.ingebrigtsen.no/2021/02/16/command-discovery-in-emacs/
+- Replace define-key (deprecated) with keymap-set.
