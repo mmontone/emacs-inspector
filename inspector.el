@@ -178,26 +178,22 @@ END-COLUMN controls the truncation."
 (cl-defgeneric inspector--face-for-object (object)
   "Return face to use for OBJECT.")
 
-(cl-defmethod inspector--face-for-object (object)
+(cl-defmethod inspector--face-for-object (_object)
   "Use builtin face by default for non matching OBJECTs."
-  (ignore object)
   'inspector-value-face)
 
-(cl-defmethod inspector--face-for-object ((string string))
+(cl-defmethod inspector--face-for-object ((_ string))
   "Inspector face for STRING."
-  (ignore string)
   font-lock-string-face)
 
 (cl-defmethod inspector--face-for-object ((symbol symbol))
   "Inspector face for SYMBOLs."
-  (ignore symbol)
   (if (keywordp symbol)
       font-lock-builtin-face
     font-lock-variable-name-face))
 
-(cl-defmethod inspector--face-for-object ((integer integer))
+(cl-defmethod inspector--face-for-object ((_ integer))
   "Inspector face for INTEGERs."
-  (ignore integer)
   nil)
 
 (defun inspector--insert-inspect-button (object &optional label)
@@ -306,6 +302,7 @@ is expected to be used.")
 (cl-defmethod inspect-object ((object t))
   "Render inspector buffer for OBJECT."
   (cond
+   ;; FIXME: Why use this `cond' instead of using separate methods?
    ((eieio-object-p object)
     (insert "instance of ")
     (inspector--insert-inspect-button
@@ -720,13 +717,9 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
      :vert-only t)
     map))
 
-(add-hook 'inspector-mode-hook
-          (lambda ()
-            (setq-local tool-bar-map inspector-tool-bar-map)))
-
-;; Better define and use a major mode?:
-(define-derived-mode inspector-mode fundamental-mode
-  "Inspector mode")
+(define-derived-mode inspector-mode fundamental-mode "Inspector"
+  "Major mode for the Emacs Lisp Inspector."
+  (setq-local tool-bar-map inspector-tool-bar-map))
 
 (provide 'inspector)
 
