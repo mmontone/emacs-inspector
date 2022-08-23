@@ -315,8 +315,10 @@ is expected to be used.")
     (newline)
     (dolist (slot (eieio-class-slots (eieio-object-class object)))
       (insert (format "%s: " (cl--slot-descriptor-name slot)))
-      (inspector--insert-inspect-button
-       (slot-value object (cl--slot-descriptor-name slot)))
+      (if (not (slot-boundp object (cl--slot-descriptor-name slot)))
+          (insert "unbound")
+        (inspector--insert-inspect-button
+         (slot-value object (cl--slot-descriptor-name slot))))
       (newline)))
    ((cl-struct-p object)
     (inspector--insert-title (format "%s struct" (type-of object)))
