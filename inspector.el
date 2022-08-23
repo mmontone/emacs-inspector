@@ -646,14 +646,14 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive
    (list
     (completing-read "Inspect local variable: "
-		     (with-current-buffer "*Backtrace*"
-		       ;; The addition of 0 to the return value of (debugger-frame-number) is necessary here. Why?? Ugly hack ...
-		       ;; On Emacs 29.0.50 with native comp at least ..
-		       (let ((n (+ (debugger-frame-number) 0)))
-			 (mapcar #'car (backtrace--locals n)))))))
+                     (with-current-buffer "*Backtrace*"
+                       ;; The addition of 0 to the return value of (debugger-frame-number) is necessary here. Why?? Ugly hack ...
+                       ;; On Emacs 29.0.50 with native comp at least ..
+                       (let ((n (+ (debugger-frame-number) 0)))
+                         (mapcar #'car (backtrace--locals n)))))))
   (with-current-buffer "*Backtrace*"
     (let* ((n (debugger-frame-number))
-	   (locals (backtrace--locals n)))
+           (locals (backtrace--locals n)))
       (inspector-inspect (cdr (assoc (intern varname) locals))))))
 
 ;;;###autoload
