@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, emacs-lisp, development
-;; Version: 0.5
+;; Version: 0.6
 ;; Package-Requires: ((emacs "27"))
 
 ;; This program is free software; you can redistribute it and/or modify
