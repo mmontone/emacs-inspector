@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, emacs-lisp, development
-;; Version: 0.6
+;; Version: 0.7
 ;; Package-Requires: ((emacs "27"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -350,6 +350,33 @@ is expected to be used.")
     (inspector--insert-title "finalizer")
     (inspector--insert-value (inspector--princ-to-string object)))
    (t (error "Cannot inspect object: %s" object))))
+
+(cl-defmethod inspect-object ((object process))
+  (inspector--insert-title "process")
+  (inspector--insert-value (inspector--princ-to-string object))
+  (newline 2)
+  (inspector--insert-label "PID")
+  (inspector--insert-value (inspector--princ-to-string (process-id object)))
+  (newline)
+  (inspector--insert-label "Status")
+  (inspector--insert-value (inspector--princ-to-string (process-status object)))
+  (newline)
+  (inspector--insert-label "TTY name")
+  (inspector--insert-value (inspector--princ-to-string (process-tty-name object)))
+  (newline)
+  (inspector--insert-label "Contact")
+  (inspector--insert-value (inspector--princ-to-string (process-contact object)))
+  (newline)
+  (inspector--insert-label "Properties")
+  (newline)
+  (let ((plist (cl-copy-list (process-plist object))))
+    (while plist
+      (let ((key (pop plist)))
+        (inspector--insert-inspect-button key))
+      (insert ": ")
+      (let ((value (pop plist)))
+        (inspector--insert-inspect-button value))
+      (newline))))
 
 (cl-defmethod inspect-object ((cons cons))
   "Inspect a CONS object."
