@@ -349,7 +349,12 @@ is expected to be used.")
    ((eq (type-of object) 'finalizer)
     (inspector--insert-title "finalizer")
     (inspector--insert-value (inspector--princ-to-string object)))
-   (t (error "Cannot inspect object: %s" object))))
+   ((user-ptrp object)
+    (inspector--insert-title "user-ptr")
+    (inspector--insert-value (inspector--princ-to-string object)))
+   (t ;; Just print the object
+    (inspector--insert-title (inspector--princ-to-string (type-of object)))
+    (inspector--insert-value (inspector--princ-to-string object)))))
 
 (cl-defmethod inspect-object ((process process))
   "Inspect a PROCESS."
