@@ -167,7 +167,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (treeview-display-node (tree-inspector--make-node data))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
-      (display-buffer buffer))))
+      (switch-to-buffer buffer))))
 
 
 (tree-inspector-inspect 2)
