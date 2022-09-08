@@ -49,6 +49,11 @@
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
+(cl-defmethod tree-inspector--make-node ((object symbol))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    node))
+
 (cl-defmethod tree-inspector--make-node ((object string))
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node
@@ -70,6 +75,23 @@
 		   child))
 	       object))
       node))))
+
+(cl-defmethod tree-inspector--make-node ((object hash-table))
+  "tree-inspector node for hash-tables."
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    (let (children)
+      (dolist (key (hash-table-keys object))
+	(let ((child (treeview-new-node))
+	      (value (gethash key object)))
+	  (treeview-set-node-name child (format "%s=%s" key value))
+	  (treeview-set-node-children child
+	   (list 
+	    (tree-inspector--make-node key)
+	    (tree-inspector--make-node value)))
+	  (push child children)))
+      (treeview-set-node-children node children)
+      node)))
 
 (defun tree-inspector--get-indent (node)
   "Return the indentation of NODE."
@@ -136,7 +158,6 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :group 'tree-inspector
   :type 'string)
 
-
 (defun tree-inspector-inspect (data)
   (let ((buffer (get-buffer-create (format "*tree-inspector: %s*" data))))
     (with-current-buffer buffer
@@ -169,7 +190,12 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (local-set-key (kbd "q") #'kill-current-buffer)
       (switch-to-buffer buffer))))
 
+;; (tree-inspector-inspect 2)
+;; (tree-inspector-inspect (list 1 2 3))
+;; (tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
+ ;; (tree-inspector-inspect (let ((tab (make-hash-table)))
+ ;;                           (puthash 'a 22 tab)
+ ;; 			   (puthash 'b 44 tab)
+ ;; 			   tab))
 
-(tree-inspector-inspect 2)
-(tree-inspector-inspect (list 1 2 3))
-(tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
+
