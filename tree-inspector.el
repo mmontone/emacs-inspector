@@ -49,6 +49,13 @@
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
+(cl-defmethod tree-inspector--make-node ((object string))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node
+			    (truncate-string-to-width object
+						      30 nil nil "..."))
+    node))
+
 (cl-defmethod tree-inspector--make-node  ((object cons))
   (cond
    ((tree-inspector--proper-list-p object)
@@ -59,10 +66,22 @@
       (treeview-set-node-children node
        (mapcar (lambda (item)
 		 (let ((child (tree-inspector--make-node item)))
-		   ;;(treeview-set-node-parent child node)
+		   (treeview-set-node-parent child node)
 		   child))
 	       object))
       node))))
+
+(defun tree-inspector--get-indent (node)
+  "Return the indentation of NODE."
+  (let ((indent ())
+        (parent nil))
+    (while (setq parent (treeview-get-node-parent node))
+      (setq indent (cons (if (treeview-last-child-p parent)
+                             dir-treeview-indent-last-unit
+                             dir-treeview-indent-unit)
+                         indent)
+            node parent))
+    indent))
 
 (defgroup tree-inspector nil
   "tree-inspector"
@@ -97,6 +116,27 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :group 'tree-inspector
   :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
 
+(defcustom tree-inspector-indent-unit "  |  "
+  "Symbol to indent directories when the parent is not the last child."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-indent-last-unit "     "
+  "Symbol to indent directories when the parent is the last child of its parent."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-folded-node-control "[+]"
+  "Control symbol for folded directories."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-expanded-node-control "[-]"
+  "Control symbol for expanded directories."
+  :group 'tree-inspector
+  :type 'string)
+
+
 (defun tree-inspector-inspect (data)
   (let ((buffer (get-buffer-create (format "*tree-inspector: %s*" data))))
     (with-current-buffer buffer
@@ -105,11 +145,13 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (setq-local treeview-get-indent-function
 		  (lambda (node) (list " ")))
       (setq-local treeview-get-label-function #'first)
+      (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
       (setq-local treeview-get-control-function
 		  (lambda (node)
-		    (if (treeview-get-node-children node)
-			"[+]"
-		      nil)))
+		    (when (treeview-get-node-children node)
+		      (if (treeview-node-folded-p node)
+			  tree-inspector-folded-node-control
+			tree-inspector-expanded-node-control))))
       (setq-local treeview-update-node-children-function
 		  (cl-constantly nil))
       (setq-local treeview-after-node-expanded-function
@@ -124,8 +166,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 		    (treeview-make-keymap tree-inspector-label-keymap)))
       (treeview-display-node (tree-inspector--make-node data))
       (setq buffer-read-only t)
+      (local-set-key (kbd "q") #'kill-current-buffer)
       (display-buffer buffer))))
 
 
 (tree-inspector-inspect 2)
 (tree-inspector-inspect (list 1 2 3))
+(tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
