@@ -187,6 +187,20 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
                              (tree-inspector--make-node (cdr cons))))
                 child))
             object))
+   ;; plists
+   ((and tree-inspector-use-specialized-inspectors-for-lists
+         (tree-inspector--plistp object))
+    (mapcar (lambda (cons)
+              (let ((child (treeview-new-node)))
+                (treeview-set-node-name
+                 child (format "%s %s"
+                               (tree-inspector--print-object (car cons))
+                               (tree-inspector--print-object (cdr cons))))
+                (tree-inspector--set-node-children
+                 child (list (tree-inspector--make-node (car cons))
+                             (tree-inspector--make-node (cdr cons))))
+                child))
+            (cl--plist-to-alist object)))
    ;; proper lists
    ((tree-inspector--proper-list-p object)
     (mapcar (lambda (item)
@@ -231,8 +245,8 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 
 (cl-defmethod tree-inspector--make-node ((object string))
   (let ((node (treeview-new-node)))
-    (treeview-set-node-name node
-                            (tree-inspector--print-object object))
+    (treeview-set-node-name
+     node (tree-inspector--print-object object))
     node))
 
 (cl-defmethod tree-inspector--make-node  ((object cons))
@@ -260,8 +274,30 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       ;;              child))
       ;;          object))
       node))
-   ;; proper lists
-   ((tree-inspector--proper-list-p object)
+   ;; alists
+   ((and tree-inspector-use-specialized-inspectors-for-lists
+         (tree-inspector--alistp object))
+    (let ((node (treeview-new-node)))
+      (treeview-set-node-name
+       node
+       (tree-inspector--print-object object))
+      (treeview-set-node-prop node 'object object)
+      ;; (treeview-set-node-children
+      ;;  node
+      ;;  (mapcar (lambda (cons)
+      ;;            (let ((child (treeview-new-node)))
+      ;;              (treeview-set-node-name
+      ;;               child (format "(%s . %s)"
+      ;;                             (tree-inspector--print-object (car cons))
+      ;;                             (tree-inspector--print-object (cdr cons))))
+      ;;              (treeview-set-node-children
+      ;;               child (list (tree-inspector--make-node (car cons))
+      ;;                           (tree-inspector--make-node (cdr cons))))
+      ;;              child))
+      ;;          object))
+      node))   
+   ;; plists
+   ((tree-inspector--plistp object)
     (let ((node (treeview-new-node)))
       (treeview-set-node-name
        node (tree-inspector--print-object object))

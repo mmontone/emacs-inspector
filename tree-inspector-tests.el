@@ -144,26 +144,20 @@
    (should (cl-search "33" buffer-string))
    (should (cl-search "44" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-plist-test ()
-  (inspector-inspect '(:a 33 :b 44))
-  (let ((buffer-string (buffer-string)))
-    (when inspector-use-specialized-inspectors-for-lists
-      (should (cl-search "property list" buffer-string)))
-    (should (cl-search "a" buffer-string))
-    (should (cl-search "b" buffer-string))
-    (should (cl-search "33" buffer-string))
-    (should (cl-search "44" buffer-string))
-    (inspector-quit))
+(ert-deftest tree-inspector-tests--inspect-plist-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string '(:a 33 :b 44))
+   (should (cl-search "a" buffer-string))
+   (should (cl-search "b" buffer-string))
+   (should (cl-search "33" buffer-string))
+   (should (cl-search "44" buffer-string)))
 
-  (inspector-inspect '(a 33 b 44))
-  (let ((buffer-string (buffer-string)))
-    (when inspector-use-specialized-inspectors-for-lists
-      (should (cl-search "property list" buffer-string)))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string '(a 33 b 44))
     (should (cl-search "a" buffer-string))
     (should (cl-search "b" buffer-string))
     (should (cl-search "33" buffer-string))
-    (should (cl-search "44" buffer-string))
-    (inspector-quit)))
+    (should (cl-search "44" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-hash-table-test ()
   (inspector-inspect (let ((table (make-hash-table)))
