@@ -57,6 +57,7 @@
 
 (defun tree-inspector-tests-run ()
   "Run tree-inspector tests."
+  (interactive)
   (ert "tree-inspector-tests.*"))
 
 (ert-deftest tree-inspector-tests--inspect-integer-test ()
@@ -73,75 +74,56 @@
    ;;(should (cl-search "float" buffer-string))
    ))
 
-(ert-deftest inspector-tests--inspect-character-test ()
-  (inspector-inspect ?a)
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "character" buffer-string))
-    (should (cl-search "97" buffer-string))
-    (inspector-quit)))
+(ert-deftest tree-inspector-tests--inspect-character-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string ?a)
+   (should (cl-search "97" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-symbol-test ()
-  (inspector-inspect 'abcd)
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "abcd" buffer-string))
-    (should (cl-search "symbol" buffer-string))
-    (inspector-quit))
+(ert-deftest tree-inspector-tests--inspect-symbol-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string 'abcd)
+   (should (cl-search "abcd" buffer-string)))
 
-  (inspector-inspect :abcd)
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "abcd" buffer-string))
-    (should (cl-search "symbol" buffer-string))
-    (inspector-quit)))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string :abcd)
+   (should (cl-search "abcd" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-list-test ()
-  (inspector-inspect '(1 2 3))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "list" buffer-string))
-    (should (cl-search "1" buffer-string))
+(ert-deftest tree-inspector-tests--inspect-list-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string '(1 2 3))
+   (should (cl-search "1" buffer-string))
     (should (cl-search "2" buffer-string))
-    (should (cl-search "3" buffer-string))
-    (inspector-quit)))
+    (should (cl-search "3" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-vector-test ()
-  (inspector-inspect [1 "two" (three)])
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "vector" buffer-string))
-    (should (cl-search "1" buffer-string))
-    (should (cl-search "two" buffer-string))
-    (should (cl-search "three" buffer-string))
-    (inspector-quit)))
-
-;; Long lists are to be sliced:
-(ert-deftest inspector-tests--inspect-long-list-test ()
-  (inspector-inspect (cl-loop for i from 1 to 3000 collect i))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "more" buffer-string))
-    (should (< (count-lines (point-min) (point-max)) 120)))
-  (inspector-quit))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string [1 "two" (three)])
+   (should (cl-search "1" buffer-string))
+   (should (cl-search "two" buffer-string))
+   (should (cl-search "three" buffer-string))))
 
 ;; Char tables
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Char_002dTable-Type.html
-(ert-deftest inspector-tests--inspect-char-table-test ()
-  (inspector-inspect ascii-case-table)
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "char-table" buffer-string))
-    (inspector-quit))
+;; (ert-deftest inspector-tests--inspect-char-table-test ()
+;;   (tree-inspector-inspect ascii-case-table)
+;;   (let ((buffer-string (buffer-string)))
+;;     (should (cl-search "char-table" buffer-string))
+;;     (inspector-quit))
 
-  (inspector-inspect (make-display-table))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "char-table" buffer-string))
-    (inspector-quit))
+;;   (inspector-inspect (make-display-table))
+;;   (let ((buffer-string (buffer-string)))
+;;     (should (cl-search "char-table" buffer-string))
+;;     (inspector-quit))
 
-  (inspector-inspect (standard-syntax-table))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "char-table" buffer-string))
-    (inspector-quit)))
+;;   (inspector-inspect (standard-syntax-table))
+;;   (let ((buffer-string (buffer-string)))
+;;     (should (cl-search "char-table" buffer-string))
+;;     (inspector-quit)))
 
-(ert-deftest inspector-tests--inspect-bool-vector-test ()
-  (inspector-inspect (make-category-set "al"))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "bool-vector" buffer-string))
-    (inspector-quit)))
+;; (ert-deftest tree-inspector-tests--inspect-bool-vector-test ()
+;;   (tree-inspector-tests--with-tree-inspector-contents
+;;    (buffer-string (make-category-set "al"))
+;;     (should (cl-search "nil" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-nil-test ()
   (inspector-inspect nil)

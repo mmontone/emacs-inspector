@@ -167,6 +167,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 (cl-defgeneric tree-inspector--node-children (node)
   (:documentation "Return the NODE children treeview nodes."))
 
+(cl-defmethod tree-inspector--node-children ((object t))
+  "Objects have no children by default."
+  nil)
+
 (cl-defmethod tree-inspector--node-children ((object cons))
   (cond
    ;; alists
@@ -268,6 +272,21 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       ;;               object))
       node))
    (t (error "Implement inspector for: %s" object))))
+
+(cl-defmethod tree-inspector--make-node ((object bool-vector))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name
+     node (tree-inspector--print-object object))
+    (treeview-set-node-prop node 'object object)
+    (treeview-set-node-children
+     node
+     (cl-map 'list
+             (lambda (item)
+               (let ((child (tree-inspector--make-node item)))
+                 (treeview-set-node-parent child node)
+                 child))
+             object))
+    node))
 
 (cl-defmethod tree-inspector--make-node ((object vector))
   (let ((node (treeview-new-node)))
