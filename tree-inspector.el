@@ -46,6 +46,54 @@
    (prin1-to-string object)
    30 nil nil "..."))
 
+(defun tree-inspector--set-node-children (node children)
+  (mapc (lambda (child)
+          (treeview-set-node-parent child node))
+        children)
+  (treeview-set-node-children node children))
+
+(defun tree-inspector--update-node-children (node)
+  (let ((object (treeview-get-node-prop node 'object)))
+    (when object
+      (let ((children (tree-inspector--node-children object)))
+        (when children
+          (tree-inspector--set-node-children node children))))))
+
+(cl-defgeneric tree-inspector--node-children (node))
+
+(cl-defmethod tree-inspector--node-children ((object cons))
+  (cond
+   ;; alists
+   ((and tree-inspector-use-specialized-inspectors-for-lists
+         (tree-inspector--alistp object))
+    (mapcar (lambda (cons)
+              (let ((child (treeview-new-node)))
+                (treeview-set-node-name
+                 child (format "(%s . %s)"
+                               (tree-inspector--print-object (car cons))
+                               (tree-inspector--print-object (cdr cons))))
+                (tree-inspector--set-node-children
+                 child (list (tree-inspector--make-node (car cons))
+                             (tree-inspector--make-node (cdr cons))))
+                child))
+            object))
+   ;; proper lists
+   ((tree-inspector--proper-list-p object)
+    (mapcar (lambda (item)
+              (let ((child (tree-inspector--make-node item)))
+                ;;(treeview-set-node-parent child object)
+                child))
+            object))
+   (t (error "Implement children for: %s" object))))
+
+(cl-defmethod tree-inspector--node-children ((object vector))
+  (cl-map 'list
+          (lambda (item)
+            (let ((child (tree-inspector--make-node item)))
+              (treeview-set-node-parent child node)
+              child))
+          object))
+
 (cl-defgeneric tree-inspector--make-node (object)
   (:documentation "Create treeview node for Emacs Lisp OBJECT."))
 
@@ -88,31 +136,33 @@
       (treeview-set-node-name
        node
        (tree-inspector--print-object object))
-      (treeview-set-node-children
-       node
-       (mapcar (lambda (cons)
-                 (let ((child (treeview-new-node)))
-                   (treeview-set-node-name
-                    child (format "(%s . %s)"
-                                  (tree-inspector--print-object (car cons))
-                                  (tree-inspector--print-object (cdr cons))))
-                   (treeview-set-node-children
-                    child (list (tree-inspector--make-node (car cons))
-                                (tree-inspector--make-node (cdr cons))))
-                   child))
-               object))
+      (treeview-set-node-prop node 'object object)
+      ;; (treeview-set-node-children
+      ;;  node
+      ;;  (mapcar (lambda (cons)
+      ;;            (let ((child (treeview-new-node)))
+      ;;              (treeview-set-node-name
+      ;;               child (format "(%s . %s)"
+      ;;                             (tree-inspector--print-object (car cons))
+      ;;                             (tree-inspector--print-object (cdr cons))))
+      ;;              (treeview-set-node-children
+      ;;               child (list (tree-inspector--make-node (car cons))
+      ;;                           (tree-inspector--make-node (cdr cons))))
+      ;;              child))
+      ;;          object))
       node))
    ;; proper lists
    ((tree-inspector--proper-list-p object)
     (let ((node (treeview-new-node)))
       (treeview-set-node-name
        node (tree-inspector--print-object object))
-      (treeview-set-node-children
-       node (mapcar (lambda (item)
-                      (let ((child (tree-inspector--make-node item)))
-                        (treeview-set-node-parent child node)
-                        child))
-                    object))
+      (treeview-set-node-prop node 'object object)
+      ;; (treeview-set-node-children
+      ;;  node (mapcar (lambda (item)
+      ;;                 (let ((child (tree-inspector--make-node item)))
+      ;;                   (treeview-set-node-parent child node)
+      ;;                   child))
+      ;;               object))
       node))
    (t (error "Implement inspector for: %s" object))))
 
@@ -120,14 +170,15 @@
   (let ((node (treeview-new-node)))
     (treeview-set-node-name
      node (tree-inspector--print-object object))
-    (treeview-set-node-children
-     node
-     (cl-map 'list
-             (lambda (item)
-               (let ((child (tree-inspector--make-node item)))
-                 (treeview-set-node-parent child node)
-                 child))
-             object))
+    (treeview-set-node-prop node 'object object)
+    ;; (treeview-set-node-children
+    ;;  node
+    ;;  (cl-map 'list
+    ;;          (lambda (item)
+    ;;            (let ((child (tree-inspector--make-node item)))
+    ;;              (treeview-set-node-parent child node)
+    ;;              child))
+    ;;          object))
     node))
 
 (cl-defmethod tree-inspector--make-node ((object hash-table))
@@ -139,12 +190,11 @@
         (let ((child (treeview-new-node))
               (value (gethash key object)))
           (treeview-set-node-name child (format "%s=%s" key value))
-          (treeview-set-node-children child
-                                      (list
-                                       (tree-inspector--make-node key)
-                                       (tree-inspector--make-node value)))
+          (tree-inspector--set-node-children
+           child (list (tree-inspector--make-node key)
+                       (tree-inspector--make-node value)))
           (push child children)))
-      (treeview-set-node-children node children)
+      (tree-inspector--set-node-children node children)
       node)))
 
 (defun tree-inspector--get-indent (node)
@@ -152,10 +202,12 @@
   (let ((indent ())
         (parent nil))
     (while (setq parent (treeview-get-node-parent node))
-      (setq indent (cons (if (treeview-last-child-p parent)
-                             dir-treeview-indent-last-unit
-                           dir-treeview-indent-unit)
-                         indent)
+      (setq indent (cons
+                    ;;(if (treeview-last-child-p parent)
+                    ;;    dir-treeview-indent-last-unit
+                    ;;  dir-treeview-indent-unit)
+                    tree-inspector-indent-unit
+                    indent)
             node parent))
     indent))
 
@@ -218,22 +270,26 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :type 'string)
 
 (defun tree-inspector-inspect (data)
-  (let ((buffer (get-buffer-create (format "*tree-inspector: %s*" data))))
+  (let ((buffer (get-buffer-create (format "*tree-inspector: %s*"
+                                           (tree-inspector--print-object data)))))
     (with-current-buffer buffer
       ;; (setq-local treeview-get-root-node-function
       ;;                  (lambda () (tree-inspector--make-node data)))
       (setq-local treeview-get-indent-function
                   (lambda (node) (list " ")))
-      (setq-local treeview-get-label-function #'first)
+      (setq-local treeview-get-label-function #'cl-first)
       (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
       (setq-local treeview-get-control-function
                   (lambda (node)
-                    (when (treeview-get-node-children node)
-                      (if (treeview-node-folded-p node)
-                          tree-inspector-folded-node-control
-                        tree-inspector-expanded-node-control))))
+                    (let ((object (treeview-get-node-prop node 'object)))
+                      (when (or (treeview-get-node-children node)
+                                (and object (cl-some (lambda (type) (cl-typep object type))
+                                                     '(vector cons hash-table))))
+                        (if (treeview-node-folded-p node)
+                            tree-inspector-folded-node-control
+                          tree-inspector-expanded-node-control)))))
       (setq-local treeview-update-node-children-function
-                  (cl-constantly nil))
+                  #'tree-inspector--update-node-children)
       (setq-local treeview-after-node-expanded-function
                   (cl-constantly nil))
       (setq-local treeview-after-node-folded-function
@@ -252,8 +308,14 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 ;; (tree-inspector-inspect 2)
 ;; (tree-inspector-inspect (list 1 2 3))
 ;; (tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
-;; (tree-inspector-inspect (let ((tab (make-hash-table)))
-;;                           (puthash 'a 22 tab)
-;;                         (puthash 'b 44 tab)
-;;                         tab))
+(tree-inspector-inspect (let ((tab (make-hash-table)))
+                          (puthash 'a 22 tab)
+                          (puthash 'b 44 tab)
+                          tab))
 ;; (tree-inspector-inspect '((a . 22) (b . "lala")))
+;; (tree-inspector-inspect [1 2 3 4 5 6 6 7 7 7 8 8 8 8 9 9])
+
+;; (request "https://www.govtrack.us/api/v2/role?current=true&role_type=senator"
+;;  :success
+;;  (lambda (&rest args)
+;;    (tree-inspector-inspect (json-read-from-string (getf args :data)))))
