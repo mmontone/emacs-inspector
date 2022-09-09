@@ -51,14 +51,14 @@
   (let ((buffer (gensym "buffer")))
     `(let ((,buffer (tree-inspector-inspect ,(car (last var-and-object)))))
        (with-current-buffer ,buffer
-	 (let ((,(car var-and-object) (buffer-string)))
-	   (kill-current-buffer)
-	   ,@body)))))
+         (let ((,(car var-and-object) (buffer-string)))
+           (kill-current-buffer)
+           ,@body)))))
 
 (defun tree-inspector-tests-run ()
   "Run tree-inspector tests."
   (interactive)
-  (ert "tree-inspector-tests.*"))
+  (ert "^tree-inspector-tests-"))
 
 (ert-deftest tree-inspector-tests--inspect-integer-test ()
   (tree-inspector-tests--with-tree-inspector-contents
@@ -92,8 +92,8 @@
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string '(1 2 3))
    (should (cl-search "1" buffer-string))
-    (should (cl-search "2" buffer-string))
-    (should (cl-search "3" buffer-string))))
+   (should (cl-search "2" buffer-string))
+   (should (cl-search "3" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-vector-test ()
   (tree-inspector-tests--with-tree-inspector-contents
@@ -128,7 +128,7 @@
 (ert-deftest tree-inspector-tests--inspect-nil-test ()
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string nil)
-    (should (cl-search "nil" buffer-string))))
+   (should (cl-search "nil" buffer-string))))
 
 (ert-deftest tree-inspector-tests--inspect-cons-test ()
   (tree-inspector-tests--with-tree-inspector-contents
@@ -136,16 +136,13 @@
    (should (cl-search "1" buffer-string))
    (should (cl-search "foo" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-alist-test ()
-  (inspector-inspect '((a . 33) (b . 44)))
-  (let ((buffer-string (buffer-string)))
-    (when inspector-use-specialized-inspectors-for-lists
-      (should (cl-search "association list" buffer-string)))
-    (should (cl-search "a" buffer-string))
-    (should (cl-search "b" buffer-string))
-    (should (cl-search "33" buffer-string))
-    (should (cl-search "44" buffer-string))
-    (inspector-quit)))
+(ert-deftest tree-inspector-tests--inspect-alist-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string '((a . 33) (b . 44)))
+   (should (cl-search "a" buffer-string))
+   (should (cl-search "b" buffer-string))
+   (should (cl-search "33" buffer-string))
+   (should (cl-search "44" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-plist-test ()
   (inspector-inspect '(:a 33 :b 44))
