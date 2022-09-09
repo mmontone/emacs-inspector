@@ -125,19 +125,16 @@
 ;;    (buffer-string (make-category-set "al"))
 ;;     (should (cl-search "nil" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-nil-test ()
-  (inspector-inspect nil)
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "nil" buffer-string))
-    (inspector-quit)))
+(ert-deftest tree-inspector-tests--inspect-nil-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string nil)
+    (should (cl-search "nil" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-cons-test ()
-  (inspector-inspect (cons 1 2))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "cons" buffer-string))
-    (should (cl-search "1" buffer-string))
-    (should (cl-search "2" buffer-string))
-    (inspector-quit)))
+(ert-deftest tree-inspector-tests--inspect-cons-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (cons 1 "foo"))
+   (should (cl-search "1" buffer-string))
+   (should (cl-search "foo" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-alist-test ()
   (inspector-inspect '((a . 33) (b . 44)))

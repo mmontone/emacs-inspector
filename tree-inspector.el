@@ -194,7 +194,9 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
                 ;;(treeview-set-node-parent child object)
                 child))
             object))
-   (t (error "Implement children for: %s" object))))
+   ;; a cons
+   (t (list (tree-inspector--make-node (car object))
+	    (tree-inspector--make-node (cdr object))))))
 
 (cl-defmethod tree-inspector--node-children ((object vector))
   (cl-map 'list
@@ -271,7 +273,17 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       ;;                   child))
       ;;               object))
       node))
-   (t (error "Implement inspector for: %s" object))))
+   ;; a cons
+   (t (let ((node (treeview-new-node)))
+	(treeview-set-node-name
+	 node (format "(%s . %s)"
+		      (tree-inspector--print-object (car object))
+		      (tree-inspector--print-object (cdr object))))
+	(treeview-set-node-prop node 'object object)
+	(treeview-set-node-children
+	 node (list (tree-inspector--make-node (car object))
+		    (tree-inspector--make-node (cdr object))))
+	node))))
 
 (cl-defmethod tree-inspector--make-node ((object bool-vector))
   (let ((node (treeview-new-node)))
