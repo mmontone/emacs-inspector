@@ -421,4 +421,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (switch-to-buffer buffer)
       buffer)))
 
+(defun tree-inspector-inspect-last-sexp ()
+  "Evaluate sexp before point and inspect the result."
+  (interactive)
+  (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
+    (tree-inspector-inspect result)))
+
 (provide 'tree-inspector)
