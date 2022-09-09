@@ -305,6 +305,8 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (local-set-key (kbd "q") #'kill-current-buffer)
       (switch-to-buffer buffer))))
 
+(provide 'tree-inspector)
+
 ;; (tree-inspector-inspect 2)
 ;; (tree-inspector-inspect (list 1 2 3))
 ;; (tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
