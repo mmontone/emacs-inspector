@@ -433,7 +433,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
     node))
 
 (cl-defmethod tree-inspector--node-children ((object window))
-  (list (tree-inspector--make-node (window-parent object))
+  (list (let ((parent (tree-inspector--make-node (window-parent object))))
+	  (treeview-set-node-name
+	   parent (format "parent: %s" (treeview-get-node-name parent)))
+	  parent)
 	(tree-inspector--make-node (window-buffer object))
 	(tree-inspector--make-node (window-frame object))
 	(tree-inspector--make-node (window-parameters object))))
