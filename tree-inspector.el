@@ -1,8 +1,97 @@
+;; tree-inspector.el --- Inspector tool for Emacs Lisp object that uses a treeview  -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; URL: https://github.com/mmontone/emacs-inspector
+;; Keywords: debugging, tool, emacs-lisp, development
+;; Version: 0.2
+;; Package-Requires: ((emacs "25"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Inspector tool for Emacs Lisp object that uses a treeview.
+
+;;; Code:
+
 (require 'eieio)
 (require 'treeview)
 (require 'mule-util)
 
-;;---- Utils ----------
+;;---------- Settings --------------------------------------------------------
+
+(defgroup tree-inspector nil
+  "tree-inspector"
+  :group 'applications)
+
+(defcustom tree-inspector-control-keymap
+  '(("<mouse-1>" . treeview-toggle-node-state-at-event)
+    ("<mouse-2>" . treeview-toggle-node-state-at-event)
+    ("<mouse-3>" . dir-treeview-popup-node-menu-at-mouse)
+    ("RET" . treeview-toggle-node-state-at-point)
+    ("SPC" . treeview-toggle-node-state-at-point)
+    ("e" . tree-inspector-popup-node-menu-at-point))
+  "Keymap of the control symbols.
+A list of assignments of key sequences to commands.  Key sequences are strings
+in a format understood by `kbd'.  Commands a names of Lisp functions."
+  :group 'tree-inspector
+  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
+
+(defcustom tree-inspector-label-keymap
+  '(("<mouse-1>" . tree-inspector-inspect-object-at-event)
+    ("<mouse-2>" . tree-inspector-inspect-object-at-event)
+    ("<mouse-3>" . tree-inspector-popup-node-menu-at-mouse)
+    ("RET" . tree-inspector-inspect-object-at-point)
+    ("e" . tree-inspector-popup-node-menu-at-point)
+    ("<C-down-mouse-1>" . ignore)
+    ("<C-mouse-1>" . treeview-toggle-select-node-at-event)
+    ("<S-down-mouse-1>" . ignore)
+    ("<S-mouse-1>" . treeview-select-gap-above-node-at-event))
+  "Keymap of the labels.
+A list of assignments of key sequences to commands.  Key sequences are strings
+in a format understood by `kbd'.  Commands a names of Lisp functions."
+  :group 'tree-inspector
+  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
+
+(defcustom tree-inspector-use-specialized-inspectors-for-lists t
+  "Whether to use specialized inspectors for plists and alists."
+  :type 'boolean
+  :group 'inspector)
+
+(defcustom tree-inspector-indent-unit "  |  "
+  "Symbol to indent directories when the parent is not the last child."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-indent-last-unit "     "
+  "Symbol to indent directories when the parent is the last child of its parent."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-folded-node-control "[+]"
+  "Control symbol for folded directories."
+  :group 'tree-inspector
+  :type 'string)
+
+(defcustom tree-inspector-expanded-node-control "[-]"
+  "Control symbol for expanded directories."
+  :group 'tree-inspector
+  :type 'string)
+
+;;-------- Utils ----------------------------------------------------------
 
 (defun tree-inspector--princ-to-string (object)
   "Print OBJECT to string using `princ'."
@@ -46,6 +135,22 @@
    (prin1-to-string object)
    30 nil nil "..."))
 
+;;-------------- treeview functions --------------------------------------------
+
+(defun tree-inspector--get-indent (node)
+  "Return the indentation of NODE."
+  (let ((indent ())
+        (parent nil))
+    (while (setq parent (treeview-get-node-parent node))
+      (setq indent (cons
+                    ;;(if (treeview-last-child-p parent)
+                    ;;    dir-treeview-indent-last-unit
+                    ;;  dir-treeview-indent-unit)
+                    tree-inspector-indent-unit
+                    indent)
+            node parent))
+    indent))
+
 (defun tree-inspector--set-node-children (node children)
   (mapc (lambda (child)
           (treeview-set-node-parent child node))
@@ -59,7 +164,8 @@
         (when children
           (tree-inspector--set-node-children node children))))))
 
-(cl-defgeneric tree-inspector--node-children (node))
+(cl-defgeneric tree-inspector--node-children (node)
+  (:documentation "Return the NODE children treeview nodes."))
 
 (cl-defmethod tree-inspector--node-children ((object cons))
   (cond
@@ -88,10 +194,7 @@
 
 (cl-defmethod tree-inspector--node-children ((object vector))
   (cl-map 'list
-          (lambda (item)
-            (let ((child (tree-inspector--make-node item)))
-              (treeview-set-node-parent child node)
-              child))
+          #'tree-inspector--make-node
           object))
 
 (cl-defgeneric tree-inspector--make-node (object)
@@ -197,79 +300,8 @@
       (tree-inspector--set-node-children node children)
       node)))
 
-(defun tree-inspector--get-indent (node)
-  "Return the indentation of NODE."
-  (let ((indent ())
-        (parent nil))
-    (while (setq parent (treeview-get-node-parent node))
-      (setq indent (cons
-                    ;;(if (treeview-last-child-p parent)
-                    ;;    dir-treeview-indent-last-unit
-                    ;;  dir-treeview-indent-unit)
-                    tree-inspector-indent-unit
-                    indent)
-            node parent))
-    indent))
-
-(defgroup tree-inspector nil
-  "tree-inspector"
-  :group 'applications)
-
-(defcustom tree-inspector-control-keymap
-  '(("<mouse-1>" . treeview-toggle-node-state-at-event)
-    ("<mouse-2>" . treeview-toggle-node-state-at-event)
-    ("<mouse-3>" . dir-treeview-popup-node-menu-at-mouse)
-    ("RET" . treeview-toggle-node-state-at-point)
-    ("SPC" . treeview-toggle-node-state-at-point)
-    ("e" . tree-inspector-popup-node-menu-at-point))
-  "Keymap of the control symbols.
-A list of assignments of key sequences to commands.  Key sequences are strings
-in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :group 'tree-inspector
-  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
-
-(defcustom tree-inspector-label-keymap
-  '(("<mouse-1>" . tree-inspector-inspect-object-at-event)
-    ("<mouse-2>" . tree-inspector-inspect-object-at-event)
-    ("<mouse-3>" . tree-inspector-popup-node-menu-at-mouse)
-    ("RET" . tree-inspector-inspect-object-at-point)
-    ("e" . tree-inspector-popup-node-menu-at-point)
-    ("<C-down-mouse-1>" . ignore)
-    ("<C-mouse-1>" . treeview-toggle-select-node-at-event)
-    ("<S-down-mouse-1>" . ignore)
-    ("<S-mouse-1>" . treeview-select-gap-above-node-at-event))
-  "Keymap of the labels.
-A list of assignments of key sequences to commands.  Key sequences are strings
-in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :group 'tree-inspector
-  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
-
-(defcustom tree-inspector-use-specialized-inspectors-for-lists t
-  "Whether to use specialized inspectors for plists and alists."
-  :type 'boolean
-  :group 'inspector)
-
-(defcustom tree-inspector-indent-unit "  |  "
-  "Symbol to indent directories when the parent is not the last child."
-  :group 'tree-inspector
-  :type 'string)
-
-(defcustom tree-inspector-indent-last-unit "     "
-  "Symbol to indent directories when the parent is the last child of its parent."
-  :group 'tree-inspector
-  :type 'string)
-
-(defcustom tree-inspector-folded-node-control "[+]"
-  "Control symbol for folded directories."
-  :group 'tree-inspector
-  :type 'string)
-
-(defcustom tree-inspector-expanded-node-control "[-]"
-  "Control symbol for expanded directories."
-  :group 'tree-inspector
-  :type 'string)
-
 (defun tree-inspector-inspect (data)
+  "Inspect DATA with a tree-inspector."
   (let ((buffer (get-buffer-create (format "*tree-inspector: %s*"
                                            (tree-inspector--print-object data)))))
     (with-current-buffer buffer
@@ -306,18 +338,3 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (switch-to-buffer buffer))))
 
 (provide 'tree-inspector)
-
-;; (tree-inspector-inspect 2)
-;; (tree-inspector-inspect (list 1 2 3))
-;; (tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
-;; (tree-inspector-inspect (let ((tab (make-hash-table)))
-;;                           (puthash 'a 22 tab)
-;;                           (puthash 'b 44 tab)
-;;                           tab))
-;; (tree-inspector-inspect '((a . 22) (b . "lala")))
-;; (tree-inspector-inspect [1 2 3 4 5 6 6 7 7 7 8 8 8 8 9 9])
-
-;; (request "https://www.govtrack.us/api/v2/role?current=true&role_type=senator"
-;;  :success
-;;  (lambda (&rest args)
-;;    (tree-inspector-inspect (json-read-from-string (getf args :data)))))
