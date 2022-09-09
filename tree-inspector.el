@@ -1,6 +1,6 @@
 ;; tree-inspector.el --- Inspector tool for Emacs Lisp object that uses a treeview  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2022 Free Software Foundation, Inc.
 
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
@@ -335,6 +335,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (treeview-display-node (tree-inspector--make-node data))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
-      (switch-to-buffer buffer))))
+      (switch-to-buffer buffer)
+      buffer)))
 
 (provide 'tree-inspector)
