@@ -44,6 +44,11 @@
 (cl-defgeneric tree-inspector--make-node (object)
   (:documentation "Create treeview node for Emacs Lisp OBJECT."))
 
+(cl-defmethod tree-inspector--make-node ((object null))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node "nil")
+    node))
+
 (cl-defmethod tree-inspector--make-node ((object number))
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
@@ -62,19 +67,41 @@
     node))
 
 (cl-defmethod tree-inspector--make-node  ((object cons))
+  "tree-inspector for cons and lists."
   (cond
+   ;; alists
+   ((and tree-inspector-use-specialized-inspectors-for-lists
+	 (tree-inspector--alistp object))
+    (let ((node (treeview-new-node)))
+      (treeview-set-node-name
+       node
+       (truncate-string-to-width (prin1-to-string object) 30 nil nil "..."))
+      (treeview-set-node-children
+       node
+       (mapcar (lambda (cons)
+		 (let ((child (treeview-new-node)))
+		   (treeview-set-node-name
+		    child (format "(%s . %s)" (car cons) (cdr cons)))
+		   (treeview-set-node-children
+		    child (list (tree-inspector--make-node (car cons))
+				(tree-inspector--make-node (cdr cons))))
+		   child))
+	       object))
+      node))    
+   ;; proper lists
    ((tree-inspector--proper-list-p object)
     (let ((node (treeview-new-node)))
       (treeview-set-node-name node
-       (truncate-string-to-width (prin1-to-string object)
-				 30 nil nil "..."))
+			      (truncate-string-to-width (prin1-to-string object)
+							30 nil nil "..."))
       (treeview-set-node-children node
-       (mapcar (lambda (item)
-		 (let ((child (tree-inspector--make-node item)))
-		   (treeview-set-node-parent child node)
-		   child))
-	       object))
-      node))))
+				  (mapcar (lambda (item)
+					    (let ((child (tree-inspector--make-node item)))
+					      (treeview-set-node-parent child node)
+					      child))
+					  object))
+      node))
+   (t (error "Implement inspector for: %s" object))))
 
 (cl-defmethod tree-inspector--make-node ((object hash-table))
   "tree-inspector node for hash-tables."
@@ -138,6 +165,11 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :group 'tree-inspector
   :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
 
+(defcustom tree-inspector-use-specialized-inspectors-for-lists t
+  "Whether to use specialized inspectors for plists and alists."
+  :type 'boolean
+  :group 'inspector)
+
 (defcustom tree-inspector-indent-unit "  |  "
   "Symbol to indent directories when the parent is not the last child."
   :group 'tree-inspector
@@ -193,9 +225,9 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 ;; (tree-inspector-inspect 2)
 ;; (tree-inspector-inspect (list 1 2 3))
 ;; (tree-inspector-inspect (list 1 2 3 (list "lala" "sf")))
- ;; (tree-inspector-inspect (let ((tab (make-hash-table)))
- ;;                           (puthash 'a 22 tab)
- ;; 			   (puthash 'b 44 tab)
- ;; 			   tab))
-
+;; (tree-inspector-inspect (let ((tab (make-hash-table)))
+;;                           (puthash 'a 22 tab)
+;; 			   (puthash 'b 44 tab)
+;; 			   tab))
+;; (tree-inspector-inspect '((a . 22) (b . "lala")))
 
