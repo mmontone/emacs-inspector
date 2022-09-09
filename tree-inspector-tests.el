@@ -154,10 +154,10 @@
 
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string '(a 33 b 44))
-    (should (cl-search "a" buffer-string))
-    (should (cl-search "b" buffer-string))
-    (should (cl-search "33" buffer-string))
-    (should (cl-search "44" buffer-string))))
+   (should (cl-search "a" buffer-string))
+   (should (cl-search "b" buffer-string))
+   (should (cl-search "33" buffer-string))
+   (should (cl-search "44" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-hash-table-test ()
   (let ((table (make-hash-table)))
@@ -174,9 +174,9 @@
 
 (ert-deftest inspector-tests--inspect-function-test ()
   (tree-inspector-tests--with-tree-inspector-contents
-     (buffer-string (symbol-function 'print))
-     (should (cl-search "subr" buffer-string))
-     (should (cl-search "print" buffer-string))))
+   (buffer-string (symbol-function 'print))
+   (should (cl-search "subr" buffer-string))
+   (should (cl-search "print" buffer-string))))
 
 (defun tree-inspector-tests--factorial (integer)
   "Compute factorial of INTEGER."
@@ -185,77 +185,52 @@
 
 (ert-deftest tree-inspector-tests--inspect-compiled-function-test ()
   (tree-inspector-tests--with-tree-inspector-contents
-     (buffer-string (byte-compile 'inspector-tests--factorial))
-     (should (cl-search "factorial" buffer-string))))
+   (buffer-string (byte-compile 'inspector-tests--factorial))
+   (should (cl-search "factorial" buffer-string))))
 
 (ert-deftest tree-inspector-tests--inspect-record-test ()
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string (record 'foo 23 [bar baz] "rats"))
-    (should (cl-search "foo" buffer-string))
-    (should (cl-search "23" buffer-string))
-    (should (cl-search "rats" buffer-string))))
+   (should (cl-search "foo" buffer-string))
+   (should (cl-search "23" buffer-string))
+   (should (cl-search "rats" buffer-string))))
 
 (ert-deftest tree-inspector-tests--inspect-finalizer-test ()
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string (make-finalizer #'print))))
 
 (ert-deftest tree-inspector-tests--overlays-test ()
-  (tree-inspector-inspect (make-button 0 10))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "overlay" buffer-string)))
-  (inspector-quit)
-  (inspector-inspect (make-overlay 0 10))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "overlay" buffer-string)))
-  (inspector-quit))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (make-button 0 10))
+   (should (cl-search "overlay" buffer-string)))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (make-overlay 0 10))
+   (should (cl-search "overlay" buffer-string))))
 
 (defclass inspector-tests--person ()
   ((name :initform "John")
    (age :initform 40)))
 
-(ert-deftest inspector-tests--inspect-class-test ()
-  (inspector-inspect (make-instance 'inspector-tests--person))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "name" buffer-string))
-    (should (cl-search "John" buffer-string))
-    (should (cl-search "age" buffer-string))
-    (should (cl-search "40" buffer-string))
-    (inspector-quit)))
+(ert-deftest tree-inspector-tests--inspect-class-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (make-instance 'inspector-tests--person))
+   (let ((buffer-string (buffer-string)))
+     (should (cl-search "name" buffer-string))
+     (should (cl-search "John" buffer-string))
+     (should (cl-search "age" buffer-string))
+     (should (cl-search "40" buffer-string)))))
 
 
 (cl-defstruct inspector-tests--rectangle
   x y)
 
 (ert-deftest inspector-tests--inspect-struct-test ()
-  (inspector-inspect (make-inspector-tests--rectangle :x 30 :y 40))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "x" buffer-string))
-    (should (cl-search "y" buffer-string))
-    (should (cl-search "30" buffer-string))
-    (should (cl-search "40" buffer-string))
-    (inspector-quit)))
-
-(ert-deftest inspector-tests--slices-test ()
-  (let ((inspector-slice-size 10))
-    (inspector-inspect (cl-loop for i from 1 to 400 collect i))
-    (should (< (count-lines (point-min) (point-max)) 20))
-    (inspector-quit))
-
-  (let ((inspector-slice-size 100))
-    (inspector-inspect (cl-loop for i from 1 to 400 collect (cons i (1+ i))))
-    (should (< (count-lines (point-min) (point-max)) 120))
-    (inspector-quit))
-
-  ;; property lists are not sliced for now ...
-  ;; (let ((inspector-slice-size 100))
-  ;;   (inspector-inspect (cl-loop for i from 1 to 400 collect (gensym) collect i))
-  ;;   (should (< (count-lines (point-min) (point-max)) 120))
-  ;;   (inspector-quit))
-
-  (let ((inspector-slice-size 100))
-    (inspector-inspect (apply #'vector (cl-loop for i from 1 to 1000 collect i)))
-    (should (< (count-lines (point-min) (point-max)) 120))
-    (inspector-quit)))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (make-inspector-tests--rectangle :x 30 :y 40))
+   (should (cl-search "x" buffer-string))
+   (should (cl-search "y" buffer-string))
+   (should (cl-search "30" buffer-string))
+   (should (cl-search "40" buffer-string))))
 
 (provide 'tree-inspector-tests)
 
