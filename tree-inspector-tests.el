@@ -160,38 +160,36 @@
     (should (cl-search "44" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-hash-table-test ()
-  (inspector-inspect (let ((table (make-hash-table)))
-                       (puthash :a 22 table)
-                       (puthash :b "foo" table)
-                       table))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "hash-table" buffer-string))
-    (should (cl-search "a" buffer-string))
-    (should (cl-search "22" buffer-string))
-    (should (cl-search "b" buffer-string))
-    (should (cl-search "foo" buffer-string)))
-  (inspector-quit))
+  (let ((table (make-hash-table)))
+    (puthash :a 22 table)
+    (puthash :b "foo" table)
+
+    (tree-inspector-tests--with-tree-inspector-contents
+     (buffer-string table)
+     (should (cl-search "hash-table" buffer-string))
+     (should (cl-search "a" buffer-string))
+     (should (cl-search "22" buffer-string))
+     (should (cl-search "b" buffer-string))
+     (should (cl-search "foo" buffer-string)))))
 
 (ert-deftest inspector-tests--inspect-function-test ()
-  (inspector-inspect (symbol-function 'car))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "function" buffer-string))
-    (should (cl-search "car" buffer-string)))
-  (inspector-quit))
+  (tree-inspector-tests--with-tree-inspector-contents
+     (buffer-string (symbol-function 'print))
+     (should (cl-search "subr" buffer-string))
+     (should (cl-search "print" buffer-string))))
 
-(defun inspector-tests--factorial (integer)
+(defun tree-inspector-tests--factorial (integer)
   "Compute factorial of INTEGER."
   (if (= 1 integer) 1
-    (* integer (inspector-tests--factorial (1- integer)))))
+    (* integer (tree-inspector-tests--factorial (1- integer)))))
 
-(ert-deftest inspector-tests--inspect-compiled-function-test ()
-  (inspector-inspect (byte-compile 'inspector-tests--factorial))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "function" buffer-string)))
-  (inspector-quit))
+(ert-deftest tree-inspector-tests--inspect-compiled-function-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+     (buffer-string (byte-compile 'inspector-tests--factorial))
+     (should (cl-search "factorial" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-record-test ()
-  (inspector-inspect (record 'foo 23 [bar baz] "rats"))
+(ert-deftest tree-inspector-tests--inspect-record-test ()
+  (tree-inspector-inspect (record 'foo 23 [bar baz] "rats"))
   (let ((buffer-string (buffer-string)))
     (should (cl-search "record" buffer-string))
     (should (cl-search "foo" buffer-string))

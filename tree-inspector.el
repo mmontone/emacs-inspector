@@ -71,12 +71,12 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :type 'boolean
   :group 'inspector)
 
-(defcustom tree-inspector-indent-unit "  |  "
+(defcustom tree-inspector-indent-unit " | "
   "Symbol to indent directories when the parent is not the last child."
   :group 'tree-inspector
   :type 'string)
 
-(defcustom tree-inspector-indent-last-unit "     "
+(defcustom tree-inspector-indent-last-unit "   "
   "Symbol to indent directories when the parent is the last child of its parent."
   :group 'tree-inspector
   :type 'string)
@@ -221,7 +221,23 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   (:documentation "Create treeview node for Emacs Lisp OBJECT."))
 
 (cl-defmethod tree-inspector--make-node ((object t))
-  (error "Implement tree-inspector--make-node for %s" (type-of object)))
+  (cond
+   ((recordp object)
+    (let ((node (treeview-new-node)))
+      (treeview-set-node-name node (tree-inspector--print-object object))
+      (let (children)
+	(cl-do ((i 1 (cl-incf i)))
+            ((= i (length object)))
+	  (push (tree-inspector--make-node (aref object i)) children))
+	(tree-inspector--set-node-children node children)
+	node)))
+   (t
+    (error "Implement tree-inspector--make-node for %s" (type-of object)))))
+
+(cl-defmethod tree-inspector--make-node ((object subr))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    node))
 
 (cl-defmethod tree-inspector--make-node ((object (eql t)))
   (let ((node (treeview-new-node)))
