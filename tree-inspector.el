@@ -220,6 +220,30 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 
 (cl-defmethod tree-inspector--make-node ((object t))
   (cond
+   ((eieio-object-p object)
+    (let ((node (treeview-new-node)))
+      (treeview-set-node-name node (tree-inspector--print-object object))
+      (tree-inspector--set-node-children
+       node (mapcar (lambda (slot)
+		      (let ((child-node (tree-inspector--make-node
+					 (slot-value object (cl--slot-descriptor-name slot)))))
+			(treeview-set-node-name
+			 child-node (format "%s: %s" (cl--slot-descriptor-name slot) (treeview-get-node-name child-node)))
+			child-node))
+		    (eieio-class-slots (eieio-object-class object))))
+      node))
+   ((cl-struct-p object)
+    (let ((node (treeview-new-node)))
+      (treeview-set-node-name node (tree-inspector--print-object object))
+      (tree-inspector--set-node-children
+       node (mapcar (lambda (slot)
+		      (let ((child-node (tree-inspector--make-node
+					 (cl-struct-slot-value (type-of object) (car slot) object))))
+			(treeview-set-node-name
+			 child-node (format "%s: %s" (car slot) (treeview-get-node-name child-node)))
+			child-node))
+		    (cdr (cl-struct-slot-info (type-of object)))))
+      node))
    ((recordp object)
     (let ((node (treeview-new-node)))
       (treeview-set-node-name node (tree-inspector--print-object object))
