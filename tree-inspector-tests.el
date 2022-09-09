@@ -195,11 +195,12 @@
     (should (cl-search "23" buffer-string))
     (should (cl-search "rats" buffer-string))))
 
-(ert-deftest inspector-tests--inspect-finalizer-test ()
-  (inspector-inspect (make-finalizer #'print)))
+(ert-deftest tree-inspector-tests--inspect-finalizer-test ()
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (make-finalizer #'print))))
 
-(ert-deftest inspector-tests--overlays-test ()
-  (inspector-inspect (make-button 0 10))
+(ert-deftest tree-inspector-tests--overlays-test ()
+  (tree-inspector-inspect (make-button 0 10))
   (let ((buffer-string (buffer-string)))
     (should (cl-search "overlay" buffer-string)))
   (inspector-quit)

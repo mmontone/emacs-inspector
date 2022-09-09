@@ -383,6 +383,44 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (tree-inspector--set-node-children node children)
       node)))
 
+(cl-defmethod tree-inspector--make-node ((object buffer))
+  "tree-inspector for buffers."
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    (tree-inspector--set-node-children
+     node (list (tree-inspector--make-node (get-buffer-window object))
+		(tree-inspector--make-node
+		 (format "cursor pos: %s" (with-current-buffer object
+					    (what-cursor-position))))))
+    node))
+
+(cl-defmethod tree-inspector--make-node ((object window))
+  "tree-inspector for windows."
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    (tree-inspector--set-node-children
+     node (list (tree-inspector--make-node (window-parent object))
+		(tree-inspector--make-node (window-buffer object))
+		(tree-inspector--make-node (window-frame object))
+		(tree-inspector--make-node (window-parameters object))))
+    node))
+
+(cl-defmethod tree-inspector--make-node ((object frame))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    (tree-inspector--set-node-children
+     node (mapcar #'tree-inspector--make-node (frame-parameters object)))
+    node))
+
+(cl-defmethod tree-inspector--make-node ((object overlay))
+  "tree-inspector node for overlays."
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    (tree-inspector--set-node-children
+     node (list (tree-inspector--make-node (overlay-buffer object))
+		(tree-inspector--make-node (overlay-properties object))))
+    node))
+
 (defun tree-inspector-inspect (data)
   "Inspect DATA with a tree-inspector."
   (let ((buffer (get-buffer-create (format "*tree-inspector: %s*"
@@ -421,6 +459,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (switch-to-buffer buffer)
       buffer)))
 
+;;;###autoload
 (defun tree-inspector-inspect-last-sexp ()
   "Evaluate sexp before point and inspect the result."
   (interactive)
