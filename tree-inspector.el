@@ -164,8 +164,8 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
         (when children
           (tree-inspector--set-node-children node children))))))
 
-(cl-defgeneric tree-inspector--node-children (node)
-  (:documentation "Return the NODE children treeview nodes."))
+(cl-defgeneric tree-inspector--node-children (object)
+  (:documentation "Return the OBJECT children treeview nodes."))
 
 (cl-defmethod tree-inspector--node-children ((object t))
   "Objects have no children by default."
@@ -213,9 +213,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 	    (tree-inspector--make-node (cdr object))))))
 
 (cl-defmethod tree-inspector--node-children ((object vector))
-  (cl-map 'list
-          #'tree-inspector--make-node
-          object))
+  (cl-map 'list #'tree-inspector--make-node object))
 
 (cl-defgeneric tree-inspector--make-node (object)
   (:documentation "Create treeview node for Emacs Lisp OBJECT."))
@@ -311,7 +309,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       ;;                           (tree-inspector--make-node (cdr cons))))
       ;;              child))
       ;;          object))
-      node))   
+      node))
    ;; plists
    ((tree-inspector--plistp object)
     (let ((node (treeview-new-node)))
@@ -387,44 +385,52 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   "tree-inspector for buffers."
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
-    (tree-inspector--set-node-children
-     node (list (tree-inspector--make-node (get-buffer-window object))
-		(tree-inspector--make-node
-		 (format "cursor pos: %s" (with-current-buffer object
-					    (what-cursor-position))))))
+    (treeview-set-node-prop node 'object object)
     node))
+
+(cl-defmethod tree-inspector--node-children ((object buffer))
+  (list (tree-inspector--make-node (get-buffer-window object))
+	(tree-inspector--make-node
+	 (format "cursor pos: %s" (with-current-buffer object
+				    (what-cursor-position))))))
 
 (cl-defmethod tree-inspector--make-node ((object window))
   "tree-inspector for windows."
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
-    (tree-inspector--set-node-children
-     node (list (tree-inspector--make-node (window-parent object))
-		(tree-inspector--make-node (window-buffer object))
-		(tree-inspector--make-node (window-frame object))
-		(tree-inspector--make-node (window-parameters object))))
-    node))
+    (treeview-set-node-prop node 'object object)))
+
+(cl-defmethod tree-inspector--node-children ((object window))
+  (list (tree-inspector--make-node (window-parent object))
+	(tree-inspector--make-node (window-buffer object))
+	(tree-inspector--make-node (window-frame object))
+	(tree-inspector--make-node (window-parameters object))))
 
 (cl-defmethod tree-inspector--make-node ((object frame))
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
-    (tree-inspector--set-node-children
-     node (mapcar #'tree-inspector--make-node (frame-parameters object)))
+    (treeview-set-node-prop node 'object object)
     node))
+
+(cl-defmethod tree-inspector--node-children ((object frame))
+  (mapcar #'tree-inspector--make-node (frame-parameters object)))
 
 (cl-defmethod tree-inspector--make-node ((object overlay))
   "tree-inspector node for overlays."
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
-    (tree-inspector--set-node-children
-     node (list (tree-inspector--make-node (overlay-buffer object))
-		(tree-inspector--make-node (overlay-properties object))))
+    (treeview-set-node-prop node 'object object)
     node))
+
+(cl-defmethod tree-inspector--node-children ((object overlay))
+  (list (tree-inspector--make-node (overlay-buffer object))
+	(tree-inspector--make-node (overlay-properties object))))
 
 (defun tree-inspector-inspect (data)
   "Inspect DATA with a tree-inspector."
-  (let ((buffer (get-buffer-create (format "*tree-inspector: %s*"
-                                           (tree-inspector--print-object data)))))
+  (let ((buffer (get-buffer-create
+		 (format "*tree-inspector: %s*"
+                         (tree-inspector--print-object data)))))
     (with-current-buffer buffer
       ;; (setq-local treeview-get-root-node-function
       ;;                  (lambda () (tree-inspector--make-node data)))
@@ -434,13 +440,12 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
       (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
       (setq-local treeview-get-control-function
                   (lambda (node)
-                    (let ((object (treeview-get-node-prop node 'object)))
-                      (when (or (treeview-get-node-children node)
-                                (and object (cl-some (lambda (type) (cl-typep object type))
-                                                     '(vector cons hash-table))))
+                    (when (or (treeview-get-node-children node)
+			      (when-let ((object (treeview-get-node-prop node 'object)))
+				(tree-inspector--node-children object)))
                         (if (treeview-node-folded-p node)
                             tree-inspector-folded-node-control
-                          tree-inspector-expanded-node-control)))))
+                          tree-inspector-expanded-node-control))))
       (setq-local treeview-update-node-children-function
                   #'tree-inspector--update-node-children)
       (setq-local treeview-after-node-expanded-function
