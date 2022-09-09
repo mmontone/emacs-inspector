@@ -189,13 +189,11 @@
      (should (cl-search "factorial" buffer-string))))
 
 (ert-deftest tree-inspector-tests--inspect-record-test ()
-  (tree-inspector-inspect (record 'foo 23 [bar baz] "rats"))
-  (let ((buffer-string (buffer-string)))
-    (should (cl-search "record" buffer-string))
+  (tree-inspector-tests--with-tree-inspector-contents
+   (buffer-string (record 'foo 23 [bar baz] "rats"))
     (should (cl-search "foo" buffer-string))
     (should (cl-search "23" buffer-string))
-    (should (cl-search "rats" buffer-string)))
-  (inspector-quit))
+    (should (cl-search "rats" buffer-string))))
 
 (ert-deftest inspector-tests--inspect-finalizer-test ()
   (inspector-inspect (make-finalizer #'print)))
