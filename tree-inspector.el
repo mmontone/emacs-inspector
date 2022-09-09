@@ -398,7 +398,15 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   "tree-inspector for windows."
   (let ((node (treeview-new-node)))
     (treeview-set-node-name node (prin1-to-string object))
-    (treeview-set-node-prop node 'object object)))
+    (treeview-set-node-prop node 'object object)
+    node))
+
+;; (tree-inspector-inspect (get-buffer-window (current-buffer)))
+
+(cl-defmethod tree-inspector--make-node ((object marker))
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-name node (prin1-to-string object))
+    node))
 
 (cl-defmethod tree-inspector--node-children ((object window))
   (list (tree-inspector--make-node (window-parent object))
