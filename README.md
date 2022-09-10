@@ -38,3 +38,17 @@ Finally, you can use `M-x eval-expression` bound to letter `e`, to evaluate an e
 When on an Emacs debugging backtrace, press letter `i` to inspect the pointed frame and its local variables.
 
 When on edebug-mode, use `C-c C-i` for inspecting expressions in the debugger.
+
+# Tree Inspector
+
+An inspector tool for Emacs Lisp objects that uses a tree view.
+
+![tree-inspector.png](tree-inspector.png "Tree Inspector")
+
+Works together with the "normal" inspector when it is loaded; when an object label is clicked on the tree, an inspector is opened on that object.
+
+## Install and usage
+
+`(require 'tree-inspector)` to load.
+
+Then start the inspector with either `M-x tree-inspector-inspect-expression` or `M-x tree-inspector-inspect-last-sexp`.
