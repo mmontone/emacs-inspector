@@ -513,6 +513,13 @@ DATA can be any Emacs Lisp object."
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (tree-inspector-inspect result)))
 
+;;;###autoload
+(defun tree-inspector-inspect-expression (exp)
+  "Evaluate EXP and inspect its result with a tree-inspector."
+  (interactive (list (read--expression "Eval and inspect: ")))
+
+  (tree-inspector-inspect (eval exp t)))
+
 (provide 'tree-inspector)
 
 ;;; tree-inspector.el ends here
