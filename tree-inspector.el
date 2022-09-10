@@ -167,6 +167,12 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
             node parent))
     indent))
 
+(defun tree-inspector--new-node (object)
+  "Create a new tree-inspector node for OBJECT."
+  (let ((node (treeview-new-node)))
+    (treeview-set-node-prop node 'object object)
+    node))
+
 (defun tree-inspector--set-node-children (node children)
   "Set the CHILDREN of NODE.
 Assigns NODE as parent to CHILDREN nodes."
@@ -203,7 +209,7 @@ to specify their children in the tree-inspector.")
   "Create tree-inspector node for EIEIO instances, structures, records."
   (cond
    ((eieio-object-p object)
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name node (tree-inspector--print-object object))
       (tree-inspector--set-node-children
        node (mapcar (lambda (slot)
@@ -215,7 +221,7 @@ to specify their children in the tree-inspector.")
                     (eieio-class-slots (eieio-object-class object))))
       node))
    ((cl-struct-p object)
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name node (tree-inspector--print-object object))
       (tree-inspector--set-node-children
        node (mapcar (lambda (slot)
@@ -227,7 +233,7 @@ to specify their children in the tree-inspector.")
                     (cdr (cl-struct-slot-info (type-of object)))))
       node))
    ((recordp object)
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name node (tree-inspector--print-object object))
       (let (children)
         (cl-do ((i 1 (cl-incf i)))
@@ -240,37 +246,37 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object subr))
   "Create tree-inspector node for subr function OBJECT."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
 (cl-defmethod tree-inspector--make-node ((object (eql t)))
   "Create tree-inspector node for T."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
-(cl-defmethod tree-inspector--make-node ((_object null))
+(cl-defmethod tree-inspector--make-node ((object null))
   "Create tree-inspector node for nil object."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node "nil")
     node))
 
 (cl-defmethod tree-inspector--make-node ((object number))
   "Create tree-inspector node for numbers."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
 (cl-defmethod tree-inspector--make-node ((object symbol))
   "Create tree-inspector node for symbols."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
 (cl-defmethod tree-inspector--make-node ((object string))
   "Create tree-inspector node for strings."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name
      node (tree-inspector--print-object object))
     node))
@@ -281,35 +287,31 @@ to specify their children in the tree-inspector.")
    ;; alists
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--alistp object))
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name
        node
        (tree-inspector--print-object object))
-      (treeview-set-node-prop node 'object object)
       node))
    ;; alists
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--alistp object))
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name
        node
        (tree-inspector--print-object object))
-      (treeview-set-node-prop node 'object object)
       node))
    ;; plists
    ((tree-inspector--plistp object)
-    (let ((node (treeview-new-node)))
+    (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name
        node (tree-inspector--print-object object))
-      (treeview-set-node-prop node 'object object)
       node))
    ;; a cons
-   (t (let ((node (treeview-new-node)))
+   (t (let ((node (tree-inspector--new-node object)))
         (treeview-set-node-name
          node (format "(%s . %s)"
                       (tree-inspector--print-object (car object))
                       (tree-inspector--print-object (cdr object))))
-        (treeview-set-node-prop node 'object object)
         (treeview-set-node-children
          node (list (tree-inspector--make-node (car object))
                     (tree-inspector--make-node (cdr object))))
@@ -324,7 +326,7 @@ to specify their children in the tree-inspector.")
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--alistp object))
     (mapcar (lambda (cons)
-              (let ((child (treeview-new-node)))
+              (let ((child (tree-inspector--new-node object)))
                 (treeview-set-node-name
                  child (format "(%s . %s)"
                                (tree-inspector--print-object (car cons))
@@ -338,7 +340,7 @@ to specify their children in the tree-inspector.")
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--plistp object))
     (mapcar (lambda (cons)
-              (let ((child (treeview-new-node)))
+              (let ((child (tree-inspector--new-node object)))
                 (treeview-set-node-name
                  child (format "%s %s"
                                (tree-inspector--print-object (car cons))
@@ -359,10 +361,9 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object bool-vector))
   "Create tree-inspector node for bool-vector."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name
      node (tree-inspector--print-object object))
-    (treeview-set-node-prop node 'object object)
     (treeview-set-node-children
      node
      (cl-map 'list
@@ -375,10 +376,9 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object vector))
   "Create tree-inspector node for vectors."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name
      node (tree-inspector--print-object object))
-    (treeview-set-node-prop node 'object object)
     node))
 
 (cl-defmethod tree-inspector--node-children ((object vector))
@@ -390,11 +390,11 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object hash-table))
   "Create tree-inspector node for hash-tables."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     (let (children)
       (dolist (key (hash-table-keys object))
-        (let ((child (treeview-new-node))
+        (let ((child (tree-inspector--new-node object))
               (value (gethash key object)))
           (treeview-set-node-name child (format "%s=%s" key value))
           (tree-inspector--set-node-children
@@ -408,9 +408,8 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object buffer))
   "Create tree-inspector for buffers."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
-    (treeview-set-node-prop node 'object object)
     node))
 
 (cl-defmethod tree-inspector--node-children ((object buffer))
@@ -422,9 +421,8 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object window))
   "Create tree-inspector node for window objects."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
-    (treeview-set-node-prop node 'object object)
     node))
 
 (cl-defmethod tree-inspector--node-children ((object window))
@@ -439,15 +437,14 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object marker))
   "Create tree-inspector node for markers."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
     node))
 
 (cl-defmethod tree-inspector--make-node ((object frame))
   "Create tree-inspector nodes for frames."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
-    (treeview-set-node-prop node 'object object)
     node))
 
 (cl-defmethod tree-inspector--node-children ((object frame))
@@ -456,9 +453,8 @@ to specify their children in the tree-inspector.")
 
 (cl-defmethod tree-inspector--make-node ((object overlay))
   "Create tree-inspector node for overlays."
-  (let ((node (treeview-new-node)))
+  (let ((node (tree-inspector--new-node object)))
     (treeview-set-node-name node (prin1-to-string object))
-    (treeview-set-node-prop node 'object object)
     node))
 
 (cl-defmethod tree-inspector--node-children ((object overlay))
