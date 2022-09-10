@@ -37,6 +37,20 @@
   "tree-inspector"
   :group 'applications)
 
+(defun tree-inspector-inspect-object-at-event (event)
+  (interactive "@e")
+  (when (featurep 'inspector)
+    (let ((node (treeview-get-node-at-event event)))
+      (when-let ((object (treeview-get-node-prop node 'object)))
+	(inspector-inspect object)))))
+
+(defun tree-inspector-inspect-object-at-point ()
+  (interactive)
+  (when (featurep 'inspector)
+    (let ((node (treeview-get-node-at-pos (point))))
+      (when-let ((object (treeview-get-node-prop node 'object)))
+	(inspector-inspect object)))))
+
 (defcustom tree-inspector-control-keymap
   '(("<mouse-1>" . treeview-toggle-node-state-at-event)
     ("<mouse-2>" . treeview-toggle-node-state-at-event)
