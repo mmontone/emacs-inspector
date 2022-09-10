@@ -636,6 +636,7 @@ is expected to be used.")
   (inspector-inspect (eval exp t)))
 
 (defun inspector--basic-inspect (object)
+  "Create and prepare a new buffer for inspecting OBJECT."
   (defvar *)
   (let ((buffer (inspector-make-inspector-buffer)))
     (with-current-buffer buffer
@@ -733,7 +734,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 
 ;;;###autoload
 (defun inspector-inspect-edebug-expression (expr)
-  "Evaluate EXPR in edebug-mode, and inspect the result."
+  "Evaluate EXPR in `edebug-mode', and inspect the result."
   (interactive "xInspect edebug expression: ")
   (inspector-inspect (edebug-eval expr)))
 
