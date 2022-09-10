@@ -20,8 +20,8 @@ This package is available from ELPA.
 
 ### Invocation
 
-* `M-x inspect-expression` to evaluate an elisp expression and inspect the result.
-* `M-x inspect-last-sexp` to evaluate last sexp in current buffer and inspect the result.
+* `M-x inspector-inspect-expression` to evaluate an elisp expression and inspect the result.
+* `M-x inspector-inspect-last-sexp` to evaluate last sexp in current buffer and inspect the result.
 
 ### Inside the inspector
 
