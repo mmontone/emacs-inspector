@@ -59,10 +59,8 @@
 (defcustom tree-inspector-control-keymap
   '(("<mouse-1>" . treeview-toggle-node-state-at-event)
     ("<mouse-2>" . treeview-toggle-node-state-at-event)
-    ("<mouse-3>" . dir-treeview-popup-node-menu-at-mouse)
     ("RET" . treeview-toggle-node-state-at-point)
-    ("SPC" . treeview-toggle-node-state-at-point)
-    ("e" . tree-inspector-popup-node-menu-at-point))
+    ("SPC" . treeview-toggle-node-state-at-point))
   "Keymap of the control symbols.
 A list of assignments of key sequences to commands.  Key sequences are strings
 in a format understood by `kbd'.  Commands a names of Lisp functions."
@@ -72,9 +70,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 (defcustom tree-inspector-label-keymap
   '(("<mouse-1>" . tree-inspector--inspect-object-at-event)
     ("<mouse-2>" . tree-inspector--inspect-object-at-event)
-    ("<mouse-3>" . tree-inspector-popup-node-menu-at-mouse)
     ("RET" . tree-inspector--inspect-object-at-point)
-    ("e" . tree-inspector-popup-node-menu-at-point)
     ("<C-down-mouse-1>" . ignore)
     ("<C-mouse-1>" . treeview-toggle-select-node-at-event)
     ("<S-down-mouse-1>" . ignore)
