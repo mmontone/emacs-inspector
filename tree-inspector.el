@@ -281,6 +281,8 @@ to specify their children in the tree-inspector.")
      node (tree-inspector--print-object object))
     node))
 
+;;--------- cons -------------------------------------------
+
 (cl-defmethod tree-inspector--make-node  ((object cons))
   "Create tree-inspector node for cons and lists."
   (cond
@@ -288,20 +290,16 @@ to specify their children in the tree-inspector.")
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--alistp object))
     (let ((node (tree-inspector--new-node object)))
-      (treeview-set-node-name
-       node
-       (tree-inspector--print-object object))
-      node))
-   ;; alists
-   ((and tree-inspector-use-specialized-inspectors-for-lists
-         (tree-inspector--alistp object))
-    (let ((node (tree-inspector--new-node object)))
-      (treeview-set-node-name
-       node
-       (tree-inspector--print-object object))
+      (treeview-set-node-name node (tree-inspector--print-object object))
       node))
    ;; plists
    ((tree-inspector--plistp object)
+    (let ((node (tree-inspector--new-node object)))
+      (treeview-set-node-name
+       node (tree-inspector--print-object object))
+      node))
+   ;; proper lists
+   ((tree-inspector--proper-list-p object)
     (let ((node (tree-inspector--new-node object)))
       (treeview-set-node-name
        node (tree-inspector--print-object object))
@@ -317,8 +315,6 @@ to specify their children in the tree-inspector.")
                     (tree-inspector--make-node (cdr object))))
         node))))
 
-;;--------- cons -------------------------------------------
-
 (cl-defmethod tree-inspector--node-children ((object cons))
   "Child nodes of CONS objects."
   (cond
@@ -326,7 +322,7 @@ to specify their children in the tree-inspector.")
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--alistp object))
     (mapcar (lambda (cons)
-              (let ((child (tree-inspector--new-node object)))
+              (let ((child (tree-inspector--new-node cons)))
                 (treeview-set-node-name
                  child (format "(%s . %s)"
                                (tree-inspector--print-object (car cons))
@@ -340,7 +336,7 @@ to specify their children in the tree-inspector.")
    ((and tree-inspector-use-specialized-inspectors-for-lists
          (tree-inspector--plistp object))
     (mapcar (lambda (cons)
-              (let ((child (tree-inspector--new-node object)))
+              (let ((child (tree-inspector--new-node cons)))
                 (treeview-set-node-name
                  child (format "%s %s"
                                (tree-inspector--print-object (car cons))
