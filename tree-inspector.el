@@ -34,17 +34,19 @@
 ;;---------- Settings --------------------------------------------------------
 
 (defgroup tree-inspector nil
-  "tree-inspector"
+  "Customizations for tree-inspector."
   :group 'applications)
 
-(defun tree-inspector-inspect-object-at-event (event)
+(defun tree-inspector--inspect-object-at-event (event)
+  "Command to run as response for EVENT on tree-inspector object's label."
   (interactive "@e")
   (when (featurep 'inspector)
     (let ((node (treeview-get-node-at-event event)))
       (when-let ((object (treeview-get-node-prop node 'object)))
         (inspector-inspect object)))))
 
-(defun tree-inspector-inspect-object-at-point ()
+(defun tree-inspector--inspect-object-at-point ()
+  "Command to run for inspecting the object at point in tree-inspector."
   (interactive)
   (when (featurep 'inspector)
     (let ((node (treeview-get-node-at-pos (point))))
@@ -65,10 +67,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
 
 (defcustom tree-inspector-label-keymap
-  '(("<mouse-1>" . tree-inspector-inspect-object-at-event)
-    ("<mouse-2>" . tree-inspector-inspect-object-at-event)
+  '(("<mouse-1>" . tree-inspector--inspect-object-at-event)
+    ("<mouse-2>" . tree-inspector--inspect-object-at-event)
     ("<mouse-3>" . tree-inspector-popup-node-menu-at-mouse)
-    ("RET" . tree-inspector-inspect-object-at-point)
+    ("RET" . tree-inspector--inspect-object-at-point)
     ("e" . tree-inspector-popup-node-menu-at-point)
     ("<C-down-mouse-1>" . ignore)
     ("<C-mouse-1>" . treeview-toggle-select-node-at-event)
