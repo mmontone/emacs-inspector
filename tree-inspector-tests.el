@@ -47,17 +47,13 @@
 
 (defmacro tree-inspector-tests--with-tree-inspector-contents
     (var-and-object &rest body)
-  "Bind VAR to the inspector's description of EXP then run BODY.
-
-\(fn (VAR EXP) BODY...)"
-  (declare (indent 1) (debug ((sexp form) body)))
-  ;; FIXME: Maybe instead of a macro, you just want to define
-  ;; a `tree-inspector--to-string' function.
-  `(let ((,(car var-and-object)
-          (with-current-buffer (tree-inspector-inspect ,(cadr var-and-object))
-            (buffer-string)
-            (kill-current-buffer))))
-     ,@body))
+  "Bind VAR to the contents of the buffer, resulting of inspecting OBJECT with the tree-inspector."
+  (let ((buffer (gensym "buffer")))
+    `(let ((,buffer (tree-inspector-inspect ,(car (last var-and-object)))))
+       (with-current-buffer ,buffer
+         (let ((,(car var-and-object) (buffer-string)))
+           (kill-current-buffer)
+           ,@body)))))
 
 (defun tree-inspector-tests-run ()
   "Run tree-inspector tests."
