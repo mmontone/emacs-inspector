@@ -49,7 +49,6 @@
   "Keymap of the control symbols.
 A list of assignments of key sequences to commands.  Key sequences are strings
 in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :group 'tree-inspector
   :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
 
 (defcustom tree-inspector-label-keymap
@@ -63,7 +62,6 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   "Keymap of the labels.
 A list of assignments of key sequences to commands.  Key sequences are strings
 in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :group 'tree-inspector
   :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
 
 (defcustom tree-inspector-use-specialized-inspectors-for-lists t
@@ -73,27 +71,22 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 
 (defcustom tree-inspector-indent-unit " | "
   "Symbol to indent directories when the parent is not the last child."
-  :group 'tree-inspector
   :type 'string)
 
 (defcustom tree-inspector-indent-last-unit "   "
   "Symbol to indent directories when the parent is the last child of its parent."
-  :group 'tree-inspector
   :type 'string)
 
 (defcustom tree-inspector-folded-node-control "[+]"
   "Control symbol for folded directories."
-  :group 'tree-inspector
   :type 'string)
 
 (defcustom tree-inspector-expanded-node-control "[-]"
   "Control symbol for expanded directories."
-  :group 'tree-inspector
   :type 'string)
 
 (defcustom tree-inspector-print-object-truncated-max 30
   "Maximum length for objects printed representation in tree-inspector."
-  :group 'tree-inspector
   :type 'number)
 
 ;;-------- Utils ----------------------------------------------------------
@@ -214,44 +207,48 @@ to specify their children in the tree-inspector.")
   "Objects have no children by default."
   nil)
 
+(defun tree-inspector--make-node-for-eieio-object (object)
+  "Create tree-inspector node for EIEIO OBJECT."
+  (let ((node (tree-inspector--new-node object)))
+    (treeview-set-node-name node (tree-inspector--print-object object))
+    (tree-inspector--set-node-children
+     node (mapcar (lambda (slot)
+                    (let* ((sname (cl--slot-descriptor-name slot))
+                           (child-node
+                            (tree-inspector--make-node
+                             (slot-value object sname))))
+                      (treeview-set-node-name
+                       child-node (format "%s: %s" sname
+                                          (treeview-get-node-name child-node)))
+                      child-node))
+                  (cl--class-slots (cl--find-class (type-of object)))))
+    node))
+
 (cl-defmethod tree-inspector--make-node ((object t))
   "Create tree-inspector node for OBJECT, an EIEIO instance, structure or record."
   (cond
-   ((eieio-object-p object)
-    (let ((node (tree-inspector--new-node object)))
-      (treeview-set-node-name node (tree-inspector--print-object object))
-      (tree-inspector--set-node-children
-       node (mapcar (lambda (slot)
-                      (let ((child-node (tree-inspector--make-node
-                                         (slot-value object (cl--slot-descriptor-name slot)))))
-                        (treeview-set-node-name
-                         child-node (format "%s: %s" (cl--slot-descriptor-name slot) (treeview-get-node-name child-node)))
-                        child-node))
-                    (eieio-class-slots (eieio-object-class object))))
-      node))
-   ((cl-struct-p object)
-    (let ((node (tree-inspector--new-node object)))
-      (treeview-set-node-name node (tree-inspector--print-object object))
-      (tree-inspector--set-node-children
-       node (mapcar (lambda (slot)
-                      (let ((child-node (tree-inspector--make-node
-                                         (cl-struct-slot-value (type-of object) (car slot) object))))
-                        (treeview-set-node-name
-                         child-node (format "%s: %s" (car slot) (treeview-get-node-name child-node)))
-                        child-node))
-                    (cdr (cl-struct-slot-info (type-of object)))))
-      node))
    ((recordp object)
-    (let ((node (tree-inspector--new-node object)))
-      (treeview-set-node-name node (tree-inspector--print-object object))
-      (let (children)
-        (cl-do ((i 1 (cl-incf i)))
-            ((= i (length object)))
-          (push (tree-inspector--make-node (aref object i)) children))
-        (tree-inspector--set-node-children node children)
-        node)))
+    (let ((type (type-of object)))
+      (if (cl--class-p (cl--find-class type))
+          (tree-inspector--make-node-for-eieio-object object)
+        (let ((node (tree-inspector--new-node object)))
+          (treeview-set-node-name node (tree-inspector--print-object object))
+          (let (children)
+            (cl-do ((i 1 (cl-incf i)))
+                ((= i (length object)))
+              (push (tree-inspector--make-node (aref object i)) children))
+            (tree-inspector--set-node-children node children)
+            node)))))
+   ;; Just print the object when there's no tree-inspector--make-node specializer for it.
    (t
-    (error "Implement tree-inspector--make-node for %s" (type-of object)))))
+    (let ((node (tree-inspector--new-node object)))
+      (treeview-set-node-name
+       node (tree-inspector--print-object object))
+      node))))
+
+(when (fboundp 'oclosure-type)           ;Emacs-29.
+  (cl-defmethod tree-inspector--make-node ((object oclosure))
+    (tree-inspector--make-node-for-object object (oclosure-type object))))
 
 (cl-defmethod tree-inspector--make-node ((object subr))
   "Create tree-inspector node for subr function OBJECT."

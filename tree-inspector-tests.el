@@ -47,13 +47,17 @@
 
 (defmacro tree-inspector-tests--with-tree-inspector-contents
     (var-and-object &rest body)
-  "Bind VAR to the contents of the buffer, resulting of inspecting OBJECT with the tree-inspector."
-  (let ((buffer (gensym "buffer")))
-    `(let ((,buffer (tree-inspector-inspect ,(car (last var-and-object)))))
-       (with-current-buffer ,buffer
-         (let ((,(car var-and-object) (buffer-string)))
-           (kill-current-buffer)
-           ,@body)))))
+  "Bind VAR to the inspector's description of EXP then run BODY.
+
+\(fn (VAR EXP) BODY...)"
+  (declare (indent 1) (debug ((sexp form) body)))
+  ;; FIXME: Maybe instead of a macro, you just want to define
+  ;; a `tree-inspector--to-string' function.
+  `(let ((,(car var-and-object)
+          (with-current-buffer (tree-inspector-inspect ,(cadr var-and-object))
+            (buffer-string)
+            (kill-current-buffer))))
+     ,@body))
 
 (defun tree-inspector-tests-run ()
   "Run tree-inspector tests."
@@ -183,11 +187,6 @@
   (if (= 1 integer) 1
     (* integer (tree-inspector-tests--factorial (1- integer)))))
 
-(ert-deftest tree-inspector-tests--inspect-compiled-function-test ()
-  (tree-inspector-tests--with-tree-inspector-contents
-   (buffer-string (byte-compile 'inspector-tests--factorial))
-   (should (cl-search "factorial" buffer-string))))
-
 (ert-deftest tree-inspector-tests--inspect-record-test ()
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string (record 'foo 23 [bar baz] "rats"))
@@ -197,7 +196,8 @@
 
 (ert-deftest tree-inspector-tests--inspect-finalizer-test ()
   (tree-inspector-tests--with-tree-inspector-contents
-   (buffer-string (make-finalizer #'print))))
+   (buffer-string (make-finalizer #'print))
+   (should (cl-search "finalizer" buffer-string))))
 
 (ert-deftest tree-inspector-tests--overlays-test ()
   (tree-inspector-tests--with-tree-inspector-contents
@@ -214,12 +214,10 @@
 (ert-deftest tree-inspector-tests--inspect-class-test ()
   (tree-inspector-tests--with-tree-inspector-contents
    (buffer-string (make-instance 'inspector-tests--person))
-   (let ((buffer-string (buffer-string)))
-     (should (cl-search "name" buffer-string))
-     (should (cl-search "John" buffer-string))
-     (should (cl-search "age" buffer-string))
-     (should (cl-search "40" buffer-string)))))
-
+   (should (cl-search "name" buffer-string))
+   (should (cl-search "John" buffer-string))
+   (should (cl-search "age" buffer-string))
+   (should (cl-search "40" buffer-string))))
 
 (cl-defstruct inspector-tests--rectangle
   x y)
