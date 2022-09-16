@@ -500,7 +500,9 @@ DATA can be any Emacs Lisp object."
       (setq-local treeview-get-label-keymap-function
                   (cl-constantly
                    (treeview-make-keymap tree-inspector-label-keymap)))
-      (treeview-display-node (tree-inspector--make-node data))
+      (let ((node (tree-inspector--make-node data)))
+	(treeview-expand-node node)
+	(treeview-display-node node))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
       (switch-to-buffer buffer)
