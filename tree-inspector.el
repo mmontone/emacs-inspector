@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "27.1") (treeview "1.1.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,8 @@
   "Keymap of the control symbols.
 A list of assignments of key sequences to commands.  Key sequences are strings
 in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
+  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command")))
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-label-keymap
   '(("<mouse-1>" . tree-inspector--inspect-object-at-event)
@@ -62,32 +63,38 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   "Keymap of the labels.
 A list of assignments of key sequences to commands.  Key sequences are strings
 in a format understood by `kbd'.  Commands a names of Lisp functions."
-  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command"))))
+  :type '(repeat (cons (string :tag "Key    ") (function :tag "Command")))
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-use-specialized-inspectors-for-lists t
   "Whether to use specialized inspectors for plists and alists."
   :type 'boolean
-  :group 'inspector)
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-indent-unit " | "
   "Symbol to indent directories when the parent is not the last child."
-  :type 'string)
+  :type 'string
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-indent-last-unit "   "
   "Symbol to indent directories when the parent is the last child of its parent."
-  :type 'string)
+  :type 'string
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-folded-node-control "[+]"
   "Control symbol for folded directories."
-  :type 'string)
+  :type 'string
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-expanded-node-control "[-]"
   "Control symbol for expanded directories."
-  :type 'string)
+  :type 'string
+  :group 'tree-inspector)
 
 (defcustom tree-inspector-print-object-truncated-max 30
   "Maximum length for objects printed representation in tree-inspector."
-  :type 'number)
+  :type 'number
+  :group 'tree-inspector)
 
 ;;-------- Utils ----------------------------------------------------------
 
@@ -492,14 +499,14 @@ DATA can be any Emacs Lisp object."
       (setq-local treeview-after-node-folded-function
                   (cl-constantly nil))
       (setq-local treeview-get-control-keymap-function
-                  (cl-constantly
-                   (treeview-make-keymap tree-inspector-control-keymap)))
+                  (let ((keymap (treeview-make-keymap tree-inspector-control-keymap)))
+                    (cl-constantly keymap)))
       (setq-local treeview-get-label-keymap-function
-                  (cl-constantly
-                   (treeview-make-keymap tree-inspector-label-keymap)))
+                  (let ((keymap (treeview-make-keymap tree-inspector-label-keymap)))
+                    (cl-constantly keymap)))
       (let ((node (tree-inspector--make-node data)))
-	(treeview-expand-node node)
-	(treeview-display-node node))
+        (treeview-expand-node node)
+        (treeview-display-node node))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
       (switch-to-buffer buffer)
