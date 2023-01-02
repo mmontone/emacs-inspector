@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.8
+;; Version: 0.9
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@
 (require 'eieio)
 (require 'debug)
 (require 'edebug)
+(require 'backtrace)
 
 ;;---- Utils ----------
 
@@ -710,25 +711,15 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
       (inspector-inspect (cdr (assoc (intern varname) locals))))))
 
 ;;;###autoload
-(defun inspector-inspect-debugger-current-frame ()
-  "Inspect current frame in debugger backtrace."
-  (interactive)
-  (let* ((nframe (debugger-frame-number))
-         (frame (backtrace-frame nframe)))
-    (inspector-inspect frame)))
-
-;;;###autoload
-(defun inspector-inspect-debugger-frame-and-locals ()
+(defun inspector-inspect-backtrace-frame ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
   (let* ((nframe (debugger-frame-number))
-         (locals (backtrace--locals nframe))
-         (frame (backtrace-frame nframe)))
-    (inspector-inspect (list :frame frame
-                             :locals (inspector--alist-to-plist locals)))))
+         (frames (backtrace-get-frames)))
+    (inspector-inspect (nth nframe frames))))
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map "i" #'inspector-inspect-debugger-frame-and-locals)
+(define-key debugger-mode-map "i" #'inspector-inspect-backtrace-frame)
 
 ;; ----- edebug-mode---------------------------------------
 
