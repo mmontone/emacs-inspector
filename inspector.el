@@ -690,6 +690,8 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 (defun inspector-inspect-debugger-locals ()
   "Inspect local variables of the frame at point in debugger backtrace."
   (interactive)
+  (when (not (backtrace-get-index))
+    (error "No backtrace frame at point.  Please move cursor to a backtrace frame"))
   (let* ((nframe (debugger-frame-number))
          (locals (backtrace--locals nframe)))
     (inspector-inspect (inspector--alist-to-plist locals))))
@@ -714,6 +716,8 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
 (defun inspector-inspect-backtrace-frame ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
+  (when (not (backtrace-get-index))
+    (error "No backtrace frame at point.  Please move cursor to a backtrace frame"))
   (let* ((nframe (debugger-frame-number))
          (frames (backtrace-get-frames)))
     (inspector-inspect (nth nframe frames))))
