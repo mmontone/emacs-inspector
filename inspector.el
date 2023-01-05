@@ -751,7 +751,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   inspector-mode-menu inspector-mode-map
   "Menu for inspector."
   '("Inspector"
-    ["Previous" inspector-pop :help "Inpect previous object"]
+    ["Previous" inspector-pop :help "Inspect previous object"]
     ["Evaluate" eval-expression :help "Evaluate expression with current inspected object as context"]
     ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
 
