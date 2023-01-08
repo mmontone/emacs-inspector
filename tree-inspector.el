@@ -484,7 +484,6 @@ DATA can be any Emacs Lisp object."
                  (format "*tree-inspector: %s*"
                          (tree-inspector--print-object data)))))
     (with-current-buffer buffer
-      (setq-local treeview-get-indent-function (cl-constantly (list " ")))
       (setq-local treeview-get-label-function #'cl-first)
       (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
       (setq-local treeview-get-control-function
@@ -497,16 +496,16 @@ DATA can be any Emacs Lisp object."
                         tree-inspector-expanded-node-control))))
       (setq-local treeview-update-node-children-function
                   #'tree-inspector--update-node-children)
-      (setq-local treeview-after-node-expanded-function
-                  (cl-constantly nil))
-      (setq-local treeview-after-node-folded-function
-                  (cl-constantly nil))
+      (setq-local treeview-after-node-expanded-function #'ignore)
+      (setq-local treeview-after-node-folded-function #'ignore)
       (setq-local treeview-get-control-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-control-keymap)))
-                    (cl-constantly keymap)))
+                    (lambda (node)
+                      keymap)))
       (setq-local treeview-get-label-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-label-keymap)))
-                    (cl-constantly keymap)))
+                    (lambda (node)
+                      keymap)))
       (let ((node (tree-inspector--make-node data)))
         (treeview-expand-node node)
         (treeview-display-node node))
