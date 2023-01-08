@@ -172,8 +172,11 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   (let ((indent ())
         (parent nil))
     (while (setq parent (treeview-get-node-parent node))
-      (setq indent (cons tree-inspector-indent-unit indent)
-            node parent))
+      (push (if (treeview-last-child-p parent)
+                tree-inspector-indent-last-unit
+              tree-inspector-indent-unit)
+            indent)
+      (setq node parent))
     indent))
 
 (defun tree-inspector--new-node (object)
