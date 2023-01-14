@@ -72,12 +72,12 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :group 'tree-inspector)
 
 (defcustom tree-inspector-indent-unit " | "
-  "Symbol to indent directories when the parent is not the last child."
+  "Symbol to indent entries when the parent is not the last child."
   :type 'string
   :group 'tree-inspector)
 
 (defcustom tree-inspector-indent-last-unit "   "
-  "Symbol to indent directories when the parent is the last child of its parent."
+  "Symbol to indent entries when the parent is the last child of its parent."
   :type 'string
   :group 'tree-inspector)
 
