@@ -713,7 +713,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
       (inspector-inspect (cdr (assoc (intern varname) locals))))))
 
 ;;;###autoload
-(defun inspector-inspect-backtrace-frame ()
+(defun inspector-inspect-stack-frame ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
   (when (not (backtrace-get-index))
@@ -723,7 +723,15 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (inspector-inspect (nth nframe frames))))
 
 ;; Press letter 'i' in debugger backtrace to inspect locals.
-(define-key debugger-mode-map "i" #'inspector-inspect-backtrace-frame)
+(define-key debugger-mode-map "i" #'inspector-inspect-stack-frame)
+
+;;;###autoload
+(defun inspector-inspect-in-stack-frame (exp)
+  "Inspect an expression, in an environment like that outside the debugger.
+The environment used is the one when entering the activation frame at point."
+  (interactive
+   (list (read--expression "Inspect in stack frame: ")))
+  (inspector-inspect (debugger-eval-expression exp)))
 
 ;; ----- edebug-mode---------------------------------------
 
