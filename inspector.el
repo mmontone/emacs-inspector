@@ -713,6 +713,22 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
       (inspector-inspect (cdr (assoc (intern varname) locals))))))
 
 ;;;###autoload
+(defun inspector-inspect-debugger-return-value ()
+  "Inspect the current return value in the debugger."
+  (interactive)
+  ;; Find the backtrace-frame for the function 'debug.
+  ;; When there's an 'exit arg, assume that is the return-value and inspect it.
+  (let ((debug-frame (cl-find-if (lambda (frame)
+                                   (eq (backtrace-frame-fun frame) 'debug))
+                                 (backtrace-get-frames))))
+    (when (not debug-frame)
+      (user-error "Can't read debugger status"))
+    (let ((debug-exit (cl-getf (backtrace-frame-args debug-frame) 'exit :_not_found_)))
+      (when (eq debug-exit :_not_found_)
+        (user-error "Debugger is not in return-value state"))
+      (inspector-inspect debug-exit))))
+
+;;;###autoload
 (defun inspector-inspect-stack-frame ()
   "Inspect current frame and locals in debugger backtrace."
   (interactive)
