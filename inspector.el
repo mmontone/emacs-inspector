@@ -480,7 +480,29 @@ is expected to be used.")
          ;; A [more] button is inserted or not depending on the boolean returned here:
          (< i (length cons))))))
    ((inspector--proper-list-p cons)
-    (inspector--insert-title "proper list")
+    (and inspector-use-specialized-inspectors-for-lists
+         (funcall inspector-plist-detection-function cons))
+    (insert (propertize "proper list" 'face 'inspector-title-face))
+    (insert " ")
+    (when (funcall inspector-alist-detection-function cons)
+      (insert-button "[as alist]"
+                     'action (lambda (_btn)
+                               (let ((inspector-use-specialized-inspectors-for-lists t))
+                                 (setf buffer-read-only nil
+                                       (buffer-string) "")
+                                 (inspector-inspect-object cons)))
+                     'follow-link t))
+    (when (funcall inspector-plist-detection-function cons)
+      (insert-button "[as plist]"
+                     'action (lambda (_btn)
+                               (let ((inspector-use-specialized-inspectors-for-lists t))
+                                 (setf buffer-read-only nil
+                                       (buffer-string) "")
+                                 (inspector-inspect-object cons)))
+                     'follow-link t))
+    (newline)
+    (inspector--insert-horizontal-line)
+    (newline)
     (inspector--insert-label "length")
     (insert (inspector--princ-to-string (length cons)))
     (newline 2)
