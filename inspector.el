@@ -158,6 +158,16 @@
   :type 'integer
   :group 'inspector)
 
+(defcustom inspector-plist-detection-function 'inspector--plistp
+  "Function used by the inspector to determine if a list is a property list."
+  :type 'symbol
+  :group 'inspector)
+
+(defcustom inspector-alist-detection-function 'inspector--alistp
+  "Function used by the inspector to determine if a list is an association list."
+  :type 'symbol
+  :group 'inspector)
+
 (define-button-type 'inspector-button
   'follow-link t
   'face 'inspector-button-face
@@ -411,7 +421,7 @@ is expected to be used.")
   "Inspect a CONS object."
   (cond
    ((and inspector-use-specialized-inspectors-for-lists
-         (inspector--plistp cons))
+         (funcall inspector-plist-detection-function cons))
     (inspector--insert-title "property list")
     (inspector--insert-label "length")
     (insert (inspector--princ-to-string (length cons)))
@@ -425,7 +435,7 @@ is expected to be used.")
           (inspector--insert-inspect-button value))
         (newline))))
    ((and inspector-use-specialized-inspectors-for-lists
-         (inspector--alistp cons))
+         (funcall inspector-alist-detection-function cons))
     (inspector--insert-title "association list")
     (inspector--insert-label "length")
     (insert (inspector--princ-to-string (length cons)))
