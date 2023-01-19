@@ -158,12 +158,12 @@
   :type 'integer
   :group 'inspector)
 
-(defcustom inspector-plist-detection-function 'inspector--plistp
+(defcustom inspector-plist-test-function 'inspector--plistp
   "Function used by the inspector to determine if a list is a property list."
   :type 'symbol
   :group 'inspector)
 
-(defcustom inspector-alist-detection-function 'inspector--alistp
+(defcustom inspector-alist-test-function 'inspector--alistp
   "Function used by the inspector to determine if a list is an association list."
   :type 'symbol
   :group 'inspector)
@@ -421,7 +421,7 @@ is expected to be used.")
   "Inspect a CONS object."
   (cond
    ((and inspector-use-specialized-inspectors-for-lists
-         (funcall inspector-plist-detection-function cons))
+         (funcall inspector-plist-test-function cons))
     (insert (propertize "property list" 'face 'inspector-title-face))
     (insert " ")
     (insert-button "[as proper list]"
@@ -447,7 +447,7 @@ is expected to be used.")
           (inspector--insert-inspect-button value))
         (newline))))
    ((and inspector-use-specialized-inspectors-for-lists
-         (funcall inspector-alist-detection-function cons))
+         (funcall inspector-alist-test-function cons))
     (insert (propertize "association list" 'face 'inspector-title-face))
     (insert " ")
     (insert-button "[as proper list]"
@@ -483,10 +483,10 @@ is expected to be used.")
          (< i (length cons))))))
    ((inspector--proper-list-p cons)
     (and inspector-use-specialized-inspectors-for-lists
-         (funcall inspector-plist-detection-function cons))
+         (funcall inspector-plist-test-function cons))
     (insert (propertize "proper list" 'face 'inspector-title-face))
     (insert " ")
-    (when (funcall inspector-alist-detection-function cons)
+    (when (funcall inspector-alist-test-function cons)
       (insert-button "[as alist]"
                      'action (lambda (_btn)
                                (let ((inspector-use-specialized-inspectors-for-lists t))
@@ -495,7 +495,7 @@ is expected to be used.")
                                  (inspector-inspect-object cons)
                                  (setq buffer-read-only t)))
                      'follow-link t))
-    (when (funcall inspector-plist-detection-function cons)
+    (when (funcall inspector-plist-test-function cons)
       (insert-button "[as plist]"
                      'action (lambda (_btn)
                                (let ((inspector-use-specialized-inspectors-for-lists t))
