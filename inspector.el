@@ -746,6 +746,16 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
 
+;;;###autoload
+(defun inspector-pprint-inspected-object ()
+  "Pretty print the object being inspected."
+  (interactive)
+  (let ((object (buffer-local-value '* (current-buffer))))
+    (with-current-buffer-window "*inspector pprint*"
+	nil nil
+      (local-set-key "q" #'kill-buffer-and-window)
+      (pp object))))
+
 ;;-- Inspection from Emacs debugger
 
 ;;;###autoload
@@ -831,6 +841,7 @@ The environment used is the one when entering the activation frame at point."
     (define-key map "e" #'eval-expression)
     (define-key map "n" #'forward-button)
     (define-key map "p" #'backward-button)
+    (define-key map "P" #'inspector-pprint-inspected-object)
     map))
 
 (easy-menu-define
@@ -839,6 +850,7 @@ The environment used is the one when entering the activation frame at point."
   '("Inspector"
     ["Previous" inspector-pop :help "Inspect previous object"]
     ["Evaluate" eval-expression :help "Evaluate expression with current inspected object as context"]
+    ["Pretty print inspected object" inspector-pprint-inspected-object]
     ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
 
 (defvar inspector-tool-bar-map
