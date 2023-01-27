@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.14
+;; Version: 0.15
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -753,7 +753,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((object (buffer-local-value '* (current-buffer))))
     (with-current-buffer-window "*inspector pprint*"
 	nil nil
-      (local-set-key "q" #'kill-buffer-and-window)
+      (local-set-key "q" #'kill-this-buffer)
       (pp object))))
 
 ;;-- Inspection from Emacs debugger
