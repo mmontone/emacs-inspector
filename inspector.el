@@ -168,6 +168,22 @@
   :type 'symbol
   :group 'inspector)
 
+(defcustom inspector-pp-max-width pp-max-width
+  "Max width to use when inspector pretty printing of objects.
+If nil, there's no max width.  If t, use the window width.
+Otherwise this should be a number.
+See `pp-max-width'"
+  :type '(choice (const :tag "none" nil)
+                 (const :tag "window width" t)
+                 number)
+  :group 'inspector)
+
+(defcustom inspector-pp-use-max-width pp-use-max-width
+  "If non-nil, `pp'-related functions will try to fold lines.
+The target width is given by the `pp-max-width' variable."
+  :type 'boolean
+  :group 'inspector)
+
 (define-button-type 'inspector-button
   'follow-link t
   'face 'inspector-button-face
@@ -431,7 +447,7 @@ is expected to be used.")
                                      (buffer-string) "")
                                (inspector-inspect-object cons)
                                (setq buffer-read-only t)
-			       (goto-char 0)))
+                               (goto-char 0)))
                    'follow-link t)
     (newline)
     (inspector--insert-horizontal-line)
@@ -458,7 +474,7 @@ is expected to be used.")
                                      (buffer-string) "")
                                (inspector-inspect-object cons)
                                (setq buffer-read-only t)
-			       (goto-char 0)))
+                               (goto-char 0)))
                    'follow-link t)
     (newline)
     (inspector--insert-horizontal-line)
@@ -496,7 +512,7 @@ is expected to be used.")
                                        (buffer-string) "")
                                  (inspector-inspect-object cons)
                                  (setq buffer-read-only t)
-				 (goto-char 0)))
+                                 (goto-char 0)))
                      'follow-link t))
     (when (funcall inspector-plist-test-function cons)
       (insert-button "[as plist]"
@@ -506,7 +522,7 @@ is expected to be used.")
                                        (buffer-string) "")
                                  (inspector-inspect-object cons)
                                  (setq buffer-read-only t)
-				 (goto-char 0)))
+                                 (goto-char 0)))
                      'follow-link t))
     (newline)
     (inspector--insert-horizontal-line)
@@ -752,9 +768,12 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive)
   (let ((object (buffer-local-value '* (current-buffer))))
     (with-current-buffer-window "*inspector pprint*"
-	nil nil
+        nil nil
       (local-set-key "q" #'kill-this-buffer)
-      (pp object))))
+      (let ((pp-use-max-width inspector-pp-use-max-width)
+            (pp-max-width inspector-pp-max-width))
+        (ignore pp-use-max-width pp-max-width)
+        (pp object)))))
 
 ;;-- Inspection from Emacs debugger
 
