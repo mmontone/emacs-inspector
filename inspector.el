@@ -168,7 +168,9 @@
   :type 'symbol
   :group 'inspector)
 
-(defcustom inspector-pp-max-width pp-max-width
+;; NOTE: We shouldn't use `pp-max-width' directly because it's belong to pp package. Even pp is built-in. That package is not default loaded in my case (Doom Emacs).
+;; (defcustom inspector-pp-max-width pp-max-width
+(defcustom inspector-pp-max-width "window width"
   "Max width to use when inspector pretty printing of objects.
 If nil, there's no max width.  If t, use the window width.
 Otherwise this should be a number.
@@ -177,8 +179,9 @@ See `pp-max-width'"
                  (const :tag "window width" t)
                  number)
   :group 'inspector)
-
-(defcustom inspector-pp-use-max-width pp-use-max-width
+;; NOTE: We shouldn't use `pp-use-max-width' directly because it's belong to pp package. Even pp is built-in. That package is not default loaded in my case (Doom Emacs). If check https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/pp.el#L48 in pp.el, it is seted to nil by default.
+;; (defcustom inspector-pp-use-max-width pp-use-max-width
+(defcustom inspector-pp-use-max-width t
   "If non-nil, `pp'-related functions will try to fold lines.
 The target width is given by the `pp-max-width' variable."
   :type 'boolean
