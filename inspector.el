@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.17
+;; Version: 0.18
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -169,7 +169,10 @@
   :type 'symbol
   :group 'inspector)
 
-(defcustom inspector-pp-max-width pp-max-width
+(defcustom inspector-pp-max-width
+  (if (boundp 'pp-max-width)
+      (symbol-value 'pp-max-width)
+    "window width")
   "Max width to use when inspector pretty printing of objects.
 If nil, there's no max width.  If t, use the window width.
 Otherwise this should be a number.
@@ -179,7 +182,10 @@ See `pp-max-width'"
                  number)
   :group 'inspector)
 
-(defcustom inspector-pp-use-max-width pp-use-max-width
+(defcustom inspector-pp-use-max-width
+  (if (boundp 'pp-use-max-width)
+      (symbol-value 'pp-use-max-width)
+    nil)
   "If non-nil, `pp'-related functions will try to fold lines.
 The target width is given by the `pp-max-width' variable."
   :type 'boolean
