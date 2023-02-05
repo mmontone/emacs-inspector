@@ -1,0 +1,23 @@
+name: inspector-test.el
+on: [push,pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - 27.1
+          - 27.2
+          - 27.3
+          - 28.1
+          - snapshot
+
+    steps:
+    - uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - uses: actions/checkout@v2
+    - name: run test for inspector.el
+      run: |
+        emacs --batch -l ert -l inspector.el -l test-inspector.el -f ert-run-tests-batch-and-exit

@@ -29,7 +29,7 @@
 
 ;;; Code:
 
-(require 'inspector)
+(require 'inspector )
 (require 'ert)
 
 (defun inspector-tests-run ()
