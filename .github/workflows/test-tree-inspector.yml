@@ -1,4 +1,4 @@
-name: inspector-test.el
+name: tree-inspector-test.el
 on: [push,pull_request]
 
 jobs:
@@ -6,12 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        emacs_version:
-          - 27.1
-          - 27.2
-          - 28.1
-          - 28.2
-          - snapshot
+        emacs_version: [27.1,27.2,28.1,28.2,snapshot]
+
 
     steps:
     - uses: purcell/setup-emacs@master
@@ -20,4 +16,4 @@ jobs:
     - uses: actions/checkout@v2
     - name: run test for inspector.el
       run: |
-        emacs --batch -l ert -l inspector.el -l inspector-tests.el -f ert-run-tests-batch-and-exit
+        emacs --batch -l ert -l tree-inspector.el -l tree-inspector-tests.el -f ert-run-tests-batch-and-exit
