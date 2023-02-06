@@ -769,6 +769,38 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
 
+(defun inspector--elisp-defun-at-point ()
+  "Return the name of the function at point."
+  (save-excursion
+    (beginning-of-defun)
+    (let ((sexp (read (current-buffer))))
+      (when (eq (car sexp) 'defun)
+        (cadr sexp)))))
+;;;###autoload
+(defun inspector-inspect-defun ()
+  "Evaluate the top s-exp - simmilar the effect
+ of M-x or eval-defun and inspect the result"
+  (interactive)
+  (let* ((s-exp (read
+                 (save-excursion
+                   (beginning-of-defun)
+                   (buffer-substring-no-properties (point) (point-max)))))
+         (result (eval s-exp lexical-binding)))
+    (inspector-inspect result)))
+
+;;;###autoload
+(defun inspector-inspect-region (start end)
+  "Evaluate the region and inspect the result."
+  (interactive "r")
+  (let* ((region (read
+                  (save-excursion
+                    (buffer-substring-no-properties start end))))
+         (result (eval region lexical-binding)))
+    (inspector-inspect result)))
+
+
+
+
 ;;;###autoload
 (defun inspector-pprint-inspected-object ()
   "Pretty print the object being inspected."

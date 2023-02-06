@@ -522,6 +522,25 @@ DATA can be any Emacs Lisp object."
     (tree-inspector-inspect result)))
 
 ;;;###autoload
+(defun tree-inspector-inspect-defun ()
+  "Inspect the top-level defun."
+        (interactive)
+        (let ((sexp (read (save-excursion
+                            (beginning-of-defun)
+                                (buffer-substring-no-properties
+                                 (point)
+                                 (progn (end-of-defun) (point)))))))
+          (tree-inspector-inspect sexp)))
+
+
+;;;###autoload
+(defun tree-inspector-inspect-region (start end)
+  "Inspect the region."
+  (interactive "r")
+  (tree-inspector-inspect (read (buffer-substring-no-properties start end))))
+
+
+;;;###autoload
 (defun tree-inspector-inspect-expression (exp)
   "Evaluate EXP and inspect its result with a tree-inspector."
   (interactive (list (read--expression "Eval and inspect: ")))
