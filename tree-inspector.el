@@ -500,11 +500,11 @@ DATA can be any Emacs Lisp object."
       (setq-local treeview-after-node-folded-function #'ignore)
       (setq-local treeview-get-control-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-control-keymap)))
-                    (lambda (node)
-                      keymap)))
+                    (lambda (_)
+		      keymap)))
       (setq-local treeview-get-label-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-label-keymap)))
-                    (lambda (node)
+                    (lambda (_)
                       keymap)))
       (let ((node (tree-inspector--make-node data)))
         (treeview-expand-node node)
@@ -520,6 +520,24 @@ DATA can be any Emacs Lisp object."
   (interactive)
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (tree-inspector-inspect result)))
+
+;;;###autoload
+(defun tree-inspector-inspect-defun ()
+  "Inspect the top-level defun."
+  (interactive)
+  (let ((sexp (read (save-excursion
+                      (beginning-of-defun)
+                      (buffer-substring-no-properties
+                       (point)
+                       (progn (end-of-defun) (point)))))))
+    (tree-inspector-inspect sexp)))
+
+;;;###autoload
+(defun tree-inspector-inspect-region (start end)
+  "Inspect the region."
+  (interactive "r")
+  (tree-inspector-inspect (read (buffer-substring-no-properties start end))))
+
 
 ;;;###autoload
 (defun tree-inspector-inspect-expression (exp)
