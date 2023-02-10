@@ -96,6 +96,7 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :type 'number
   :group 'tree-inspector)
 
+
 ;;-------- Utils ----------------------------------------------------------
 
 (defun tree-inspector--princ-to-string (object)
@@ -475,14 +476,14 @@ to specify their children in the tree-inspector.")
         (tree-inspector--make-node (overlay-properties overlay))))
 
 ;;------ api ----------------------------------------------------
-
 (defun tree-inspector-inspect (data)
   "Inspect DATA with a tree-inspector.
 
 DATA can be any Emacs Lisp object."
-  (let ((buffer (get-buffer-create
-                 (format "*tree-inspector: %s*"
-                         (tree-inspector--print-object data)))))
+  (let ((buffer (get-buffer-create "*tree-inspector*"
+                 ;; (format "*tree-inspector: %s*"
+                 ;;         (tree-inspector--print-object data))
+                 )))
     (with-current-buffer buffer
       (setq-local treeview-get-label-function #'cl-first)
       (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
@@ -501,7 +502,7 @@ DATA can be any Emacs Lisp object."
       (setq-local treeview-get-control-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-control-keymap)))
                     (lambda (_)
-		      keymap)))
+                      keymap)))
       (setq-local treeview-get-label-keymap-function
                   (let ((keymap (treeview-make-keymap tree-inspector-label-keymap)))
                     (lambda (_)
@@ -511,8 +512,14 @@ DATA can be any Emacs Lisp object."
         (treeview-display-node node))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
+      (if (and (boundp 'evil-mode) evil-mode)
+          (evil-local-set-key 'normal (kbd "q") #'kill-current-buffer))
+
       (switch-to-buffer buffer)
+
+      ;; (tree-inspector-mode)
       buffer)))
+
 
 ;;;###autoload
 (defun tree-inspector-inspect-last-sexp ()
@@ -545,6 +552,9 @@ DATA can be any Emacs Lisp object."
   (interactive (list (read--expression "Eval and inspect: ")))
 
   (tree-inspector-inspect (eval exp t)))
+
+
+
 
 (provide 'tree-inspector)
 

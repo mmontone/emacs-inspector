@@ -52,3 +52,23 @@ Works together with the "normal" inspector when it is loaded; when an object lab
 `(require 'tree-inspector)` to load.
 
 Then start the inspector with either `M-x tree-inspector-inspect-expression` or `M-x tree-inspector-inspect-last-sexp`.
+
+### For `evil/vim` user
+
+- Add this to your config file
+```emacs-lisp
+;; Add evil keybindings to inspector-mode
+(defun inspector--set-evil-key-binding ()
+"Set evil keybindings for inspector-mode if in Evil mode."
+        (when (bound-and-true-p evil-mode)
+        (evil-define-key 'normal inspector-mode-map
+        "q" #'inspector-quit
+        "l" #'inspector-pop
+        "e" #'eval-expression
+        "n" #'forward-button
+        "p" #'backward-button
+        "P" #'inspector-pprint-inspected-object)))
+)
+(add-hook 'inspector-mode-hook #'inspector--set-evil-key-binding)
+```
+

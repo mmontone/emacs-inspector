@@ -806,10 +806,17 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (with-current-buffer-window "*inspector pprint*"
         nil nil
       (local-set-key "q" #'kill-this-buffer)
+      ;; For evil mode use `q to kill the buffer
+        (when (fboundp 'evil-local-set-key)
+          (evil-local-set-key 'normal "q" #'kill-this-buffer))
+
       (let ((pp-use-max-width inspector-pp-use-max-width)
             (pp-max-width inspector-pp-max-width))
         (ignore pp-use-max-width pp-max-width)
-        (pp object)))))
+        (pp object)
+        ;; Jump to this buffer
+       (switch-to-buffer-other-window "*inspector pprint*")
+        ))))
 
 ;;-- Inspection from Emacs debugger
 
@@ -923,6 +930,7 @@ The environment used is the one when entering the activation frame at point."
 (define-derived-mode inspector-mode fundamental-mode "Inspector"
   "Major mode for the Emacs Lisp Inspector."
   (setq-local tool-bar-map inspector-tool-bar-map))
+
 
 (provide 'inspector)
 

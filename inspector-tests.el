@@ -380,8 +380,11 @@
       (should (cl-search "proper list" buffer-string))
       (should (cl-search "1" buffer-string))
       (should (cl-search "2" buffer-string))
-      (should (cl-search "3" buffer-string)))
-    (inspector-quit)))
+      (should (cl-search "3" buffer-string))
+      (should (cl-search "length: 3" buffer-string))
+
+      (inspector-quit))))
+
 
 (ert-deftest inspector-tests--inspector-inspect-last-sexp ()
   (with-temp-buffer
@@ -394,7 +397,6 @@
       (should (cl-search "2" buffer-string))
       (should (cl-search "3" buffer-string)))
     (inspector-quit)))
-
 
 
 (provide 'inspector-tests)
