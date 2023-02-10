@@ -480,10 +480,7 @@ to specify their children in the tree-inspector.")
   "Inspect DATA with a tree-inspector.
 
 DATA can be any Emacs Lisp object."
-  (let ((buffer (get-buffer-create "*tree-inspector*"
-                 ;; (format "*tree-inspector: %s*"
-                 ;;         (tree-inspector--print-object data))
-                 )))
+  (let ((buffer (get-buffer-create "*tree-inspector*")))
     (with-current-buffer buffer
       (setq-local treeview-get-label-function #'cl-first)
       (setq-local treeview-get-indent-function #'tree-inspector--get-indent)
@@ -512,8 +509,6 @@ DATA can be any Emacs Lisp object."
         (treeview-display-node node))
       (setq buffer-read-only t)
       (local-set-key (kbd "q") #'kill-current-buffer)
-      (if (and (boundp 'evil-mode) evil-mode)
-          (evil-local-set-key 'normal (kbd "q") #'kill-current-buffer))
 
       (switch-to-buffer buffer)
 

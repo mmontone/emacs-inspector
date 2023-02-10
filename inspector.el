@@ -806,17 +806,13 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (with-current-buffer-window "*inspector pprint*"
         nil nil
       (local-set-key "q" #'kill-this-buffer)
-      ;; For evil mode use `q to kill the buffer
-        (when (fboundp 'evil-local-set-key)
-          (evil-local-set-key 'normal "q" #'kill-this-buffer))
 
       (let ((pp-use-max-width inspector-pp-use-max-width)
             (pp-max-width inspector-pp-max-width))
         (ignore pp-use-max-width pp-max-width)
         (pp object)
         ;; Jump to this buffer
-       (switch-to-buffer-other-window "*inspector pprint*")
-        ))))
+        (switch-to-buffer-other-window "*inspector pprint*")))))
 
 ;;-- Inspection from Emacs debugger
 
