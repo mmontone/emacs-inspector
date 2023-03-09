@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.20
+;; Version: 0.21
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -563,7 +563,12 @@ is expected to be used.")
 (cl-defmethod inspector-inspect-object ((string string))
   "Render inspector buffer for STRING."
   (inspector--insert-title "string")
-  (prin1 string (current-buffer)))
+  (prin1 string (current-buffer))
+  (let ((text-properties (text-properties-at 0 string)))
+    (when text-properties
+      (newline 2)
+      (inspector--insert-label "Text properties")
+      (inspector--insert-inspect-button text-properties))))
 
 (cl-defmethod inspector-inspect-object ((array array))
   "Render inspector buffer for ARRAY."
