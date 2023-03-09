@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.22
+;; Version: 0.23
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -227,12 +227,24 @@ The target width is given by the `pp-max-width' variable."
   (inspector--insert-horizontal-line)
   (newline))
 
-(defun inspector--print-truncated (object &optional end-column)
+(defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
-END-COLUMN controls the truncation."
-  (truncate-string-to-width (prin1-to-string object)
-                            (or end-column inspector-end-column)
-                            nil nil t))
+LIMIT controls the truncation."
+  (setq limit (or limit inspector-end-column))
+  (with-temp-buffer
+    (insert (cl-print-to-string-with-limit #'cl-prin1 object limit))
+    ;; Add a unique inspector-form property.
+    (put-text-property (point-min) (point) 'inspector-form (gensym))
+    ;; Make buttons from all the "..."s.  Since there might be many of
+    ;; them, use text property buttons.
+    (goto-char (point-min))
+    (while (< (point) (point-max))
+      (let ((end (next-single-property-change (point) 'cl-print-ellipsis
+                                              nil (point-max))))
+        (when (get-text-property (point) 'cl-print-ellipsis)
+          (make-text-button (point) end :type 'backtrace-ellipsis))
+        (goto-char end)))
+    (buffer-string)))
 
 (cl-defgeneric inspector--face-for-object (object)
   "Return face to use for OBJECT.")
@@ -566,17 +578,17 @@ is expected to be used.")
 (cl-defmethod inspector-inspect-object ((string string))
   "Render inspector buffer for STRING."
   (inspector--insert-title "string")
-  (prin1 string (current-buffer))
+  (insert string)
   (let ((text-properties (object-intervals string)))
     (when text-properties
       (newline 2)
       (inspector--insert-label "Text properties")
       (newline)
       (dolist (interval-props text-properties)
-	(cl-destructuring-bind (from to props) interval-props
-	  (insert (format "    [%d-%d]: " from to))
-	  (inspector--insert-inspect-button props)
-	  (newline))))))
+        (cl-destructuring-bind (from to props) interval-props
+          (insert (format "    [%d-%d]: " from to))
+          (inspector--insert-inspect-button props)
+          (newline))))))
 
 (cl-defmethod inspector-inspect-object ((array array))
   "Render inspector buffer for ARRAY."
