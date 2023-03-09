@@ -578,7 +578,7 @@ is expected to be used.")
 (cl-defmethod inspector-inspect-object ((string string))
   "Render inspector buffer for STRING."
   (inspector--insert-title "string")
-  (insert string)
+  (prin1 string (current-buffer))
   (let ((text-properties (object-intervals string)))
     (when text-properties
       (newline 2)
