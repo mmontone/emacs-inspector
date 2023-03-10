@@ -206,10 +206,9 @@ The target width is given by the `pp-max-width' variable."
 
 (defun inspector--insert-horizontal-line (&rest width)
   "Insert an horizontal line with width WIDTH."
-  (with-silent-modifications
-    (insert (propertize " "
-                        'display '(space :align-to right-fringe)
-                        'face '(:strike-through t)))))
+  (insert (propertize " "
+                      'display '(space :align-to right-fringe)
+                      'face '(:strike-through t))))
 
 (defun inspector--insert-label (label)
   "Show a LABEL in inspector buffer."
