@@ -229,7 +229,7 @@ The target width is given by the `pp-max-width' variable."
 (defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
 LIMIT controls the truncation."
-  (setq limit (or limit inspector-end-column))
+  (setq limit (or limit 500))
   (with-temp-buffer
     (insert (cl-print-to-string-with-limit #'cl-prin1 object limit))
     ;; Add a unique inspector-form property.
