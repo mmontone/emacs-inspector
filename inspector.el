@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.23
+;; Version: 0.24
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -770,6 +770,16 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
       (when preserve-history
         (push current-inspected-object inspector-history)))))
 
+(defun inspector-refresh ()
+  "Refresh inspector buffer."
+  (interactive)
+  (let ((buffer (get-buffer "*inspector*")))
+    (when buffer
+      (with-current-buffer buffer
+        (setq buffer-read-only nil)
+        (erase-buffer)
+        (inspector--basic-inspect inspector-inspected-object)))))
+
 (defun inspector-quit ()
   "Quit the Emacs inspector."
   (interactive)
@@ -800,6 +810,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (let ((sexp (read (current-buffer))))
       (when (eq (car sexp) 'defun)
         (cadr sexp)))))
+
 ;;;###autoload
 (defun inspector-inspect-defun ()
   "Evaluate the top s-exp - simmilar the effect
@@ -924,6 +935,7 @@ The environment used is the one when entering the activation frame at point."
     (define-key map "n" #'forward-button)
     (define-key map "p" #'backward-button)
     (define-key map "P" #'inspector-pprint-inspected-object)
+    (define-key map "g" #'inspector-refresh)
     map))
 
 (easy-menu-define
@@ -933,6 +945,7 @@ The environment used is the one when entering the activation frame at point."
     ["Previous" inspector-pop :help "Inspect previous object"]
     ["Evaluate" eval-expression :help "Evaluate expression with current inspected object as context"]
     ["Pretty print inspected object" inspector-pprint-inspected-object]
+    ["Refresh" inspector-refresh :help "Refresh inspector buffer"]
     ["Exit" inspector-quit :help "Quit the Emacs Lisp inspector"]))
 
 (defvar inspector-tool-bar-map
