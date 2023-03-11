@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.25
+;; Version: 0.26
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -134,8 +134,8 @@
   "Face for type description in inspector."
   :group 'inspector-faces)
 
-(defcustom inspector-end-column 80
-  "Control print truncation size in inspector."
+(defcustom inspector-truncation-limit 500
+  "Control truncation limit in inspector."
   :type 'integer
   :group 'inspector)
 
@@ -229,7 +229,7 @@ The target width is given by the `pp-max-width' variable."
 (defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
 LIMIT controls the truncation."
-  (setq limit (or limit 500))
+  (setq limit (or limit inspector-truncation-limit))
   (with-temp-buffer
     (insert (cl-print-to-string-with-limit #'cl-prin1 object limit))
     ;; Add a unique inspector-form property.
