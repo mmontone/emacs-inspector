@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.24
+;; Version: 0.25
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -732,6 +732,7 @@ is expected to be used.")
                         (make-local-variable '*))
                       buf))))
     (with-current-buffer buffer
+      (setq revert-buffer-function #'inspector--revert-buffer)
       (setq buffer-read-only nil)
       (erase-buffer))
     buffer))
@@ -779,6 +780,10 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
         (setq buffer-read-only nil)
         (erase-buffer)
         (inspector--basic-inspect inspector-inspected-object)))))
+
+(defun inspector--revert-buffer (&rest _ignore)
+  "Function bound to `revert-buffer-function'."
+  (inspector-refresh))
 
 (defun inspector-quit ()
   "Quit the Emacs inspector."
