@@ -581,11 +581,35 @@ is expected to be used.")
     (inspector--insert-label "cdr")
     (inspector--insert-inspect-button (cdr cons)))))
 
+;; NOTE: this is code extracted from https://git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/org-fold-core.el#n1450
+(defun inspector--object-intervals (string)
+  (if (fboundp 'object-intervals)
+                   (object-intervals string)
+    ;; Backward compatibility with Emacs <28.
+    ;; FIXME: Is there any better way to do it?
+    ;; Yes, it is a hack.
+    ;; The below gives us string representation as a list.
+    ;; Note that we need to remove unreadable values, like markers (#<...>).
+    (seq-partition
+     (cdr (let ((data (read (replace-regexp-in-string
+                             "^#(" "("
+                             (replace-regexp-in-string
+                              " #(" " ("
+                              (replace-regexp-in-string
+                               "#<[^>]+>" "dummy"
+                               ;; Get text representation of the string object.
+                               ;; Make sure to print everything (see `prin1' docstring).
+                               ;; `prin1' is used to print "%S" format.
+                               (let (print-level print-length)
+                                 (format "%S" string))))))))
+            (if (listp data) data (list data))))
+     3)))
+
 (cl-defmethod inspector-inspect-object ((string string))
   "Render inspector buffer for STRING."
   (inspector--insert-title "string")
   (prin1 (substring-no-properties string) (current-buffer))
-  (let ((text-properties (object-intervals string)))
+  (let ((text-properties (inspector--object-intervals string)))
     (when text-properties
       (newline 2)
       (inspector--insert-label "Text properties")
