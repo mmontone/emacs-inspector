@@ -227,12 +227,18 @@ The target width is given by the `pp-max-width' variable."
   (inspector--insert-horizontal-line)
   (newline))
 
+(defun inspector--prin1 (thing &optional stream)
+  "Print THING to STREAM."
+  (if (stringp thing)
+      (cl-print-object (substring-no-properties thing) stream)
+    (cl-print-object thing stream)))
+
 (defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
 LIMIT controls the truncation."
   (setq limit (or limit inspector-truncation-limit))
   (with-temp-buffer
-    (insert (cl-print-to-string-with-limit #'cl-prin1 object limit))
+    (insert (cl-print-to-string-with-limit #'inspector--prin1 object limit))
     ;; Add a unique inspector-form property.
     (put-text-property (point-min) (point) 'inspector-form (gensym))
     ;; Make buttons from all the "..."s.  Since there might be many of
