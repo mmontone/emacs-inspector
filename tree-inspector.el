@@ -149,14 +149,17 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 
 ;;-------------- treeview functions --------------------------------------------
 
-(defvar tree-inspector--fontification-buffer nil)
+(defvar tree-inspector--fontification-buffer nil
+  "Reference to fontification buffer used by `tree-inspector--fontify-string'.")
 
 (defun tree-inspector--get-fontification-buffer ()
+  "Return buffer for fontification used by `tree-inspector--fontify-string'."
   (or tree-inspector--fontification-buffer
       (let ((buffer (get-buffer-create "*tree-inspector-fontification*")))
         (with-current-buffer buffer
           (emacs-lisp-mode)
-          (setf tree-inspector--fontification-buffer buffer)))))
+          (setq tree-inspector--fontification-buffer buffer)
+          buffer))))
 
 (defun tree-inspector--fontify-string (string)
   "Fontify STRING as `font-lock-mode' does in emacs-lisp mode."
