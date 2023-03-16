@@ -363,10 +363,15 @@ is expected to be used.")
 (cl-defmethod inspector-inspect-object ((symbol symbol))
   "Render inspector buffer for SYMBOL."
   (insert (propertize "symbol" 'face 'inspector-title-face))
-  (insert " ")
+  (insert "  ")
   (insert-button "[find definitions]"
                  'action (lambda (_btn)
                            (xref-find-definitions (symbol-name symbol)))
+                 'follow-link t)
+  (insert " ")
+  (insert-button "[describe]"
+                 'action (lambda (_btn)
+                           (describe-symbol symbol))
                  'follow-link t)
   (newline)
   (inspector--insert-horizontal-line)
