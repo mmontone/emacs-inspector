@@ -584,7 +584,7 @@ is expected to be used.")
 ;; NOTE: this is code extracted from https://git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/org-fold-core.el#n1450
 (defun inspector--object-intervals (string)
   (if (fboundp 'object-intervals)
-                   (object-intervals string)
+      (object-intervals string)
     ;; Backward compatibility with Emacs <28.
     ;; FIXME: Is there any better way to do it?
     ;; Yes, it is a hack.
@@ -608,7 +608,8 @@ is expected to be used.")
 (cl-defmethod inspector-inspect-object ((string string))
   "Render inspector buffer for STRING."
   (inspector--insert-title "string")
-  (prin1 (substring-no-properties string) (current-buffer))
+  (insert (propertize (cl-prin1-to-string  (substring-no-properties string))
+                      'face 'font-lock-string-face))
   (let ((text-properties (inspector--object-intervals string)))
     (when text-properties
       (newline 2)
