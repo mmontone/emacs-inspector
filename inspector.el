@@ -891,6 +891,7 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((object (buffer-local-value '* (current-buffer))))
     (with-current-buffer-window "*inspector pprint*"
         nil nil
+      (emacs-lisp-mode)
       (local-set-key "q" #'kill-this-buffer)
 
       (let ((pp-use-max-width inspector-pp-use-max-width)
