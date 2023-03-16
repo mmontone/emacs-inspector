@@ -96,6 +96,10 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
   :type 'number
   :group 'tree-inspector)
 
+(defcustom tree-inspector-font-lock t
+  "Toggle syntax highlighting in tree inspector."
+  :type 'boolean
+  :group 'tree-inspector)
 
 ;;-------- Utils ----------------------------------------------------------
 
@@ -145,10 +149,32 @@ in a format understood by `kbd'.  Commands a names of Lisp functions."
 
 ;;-------------- treeview functions --------------------------------------------
 
+(defvar tree-inspector--fontification-buffer nil)
+
+(defun tree-inspector--get-fontification-buffer ()
+  (or tree-inspector--fontification-buffer
+      (let ((buffer (get-buffer-create "*tree-inspector-fontification*")))
+        (with-current-buffer buffer
+          (emacs-lisp-mode)
+          (setf tree-inspector--fontification-buffer buffer)))))
+
+(defun tree-inspector--fontify-string (string)
+  "Fontify STRING as `font-lock-mode' does in emacs-lisp mode."
+  (with-current-buffer (tree-inspector--get-fontification-buffer)
+    (erase-buffer)
+    (insert string)
+    (let ((font-lock-verbose nil))
+      (font-lock-ensure))
+    ;;(font-lock-fontify-region (point-min) (point-max))
+    (buffer-substring (point-min) (point-max))))
+
 (defun tree-inspector--print-object (object)
   "Print OBJECT, truncated."
   (truncate-string-to-width
-   (prin1-to-string object)
+   (if tree-inspector-font-lock
+       (tree-inspector--fontify-string
+        (prin1-to-string object))
+     (prin1-to-string object))
    tree-inspector-print-object-truncated-max
    nil nil "..."))
 
