@@ -30,6 +30,12 @@
 ;;     M-x `inspector-inspect-expression' to evaluate an elisp expression and inspect the result.
 ;;     M-x `inspector-inspect-last-sexp' to evaluate last sexp in current buffer and inspect the result.
 ;;
+;;     Or add the following to your config:
+;;     (define-key global-map [remap eval-last-sexp] #'inspector-eval-last-sexp)
+;;     (define-key global-map [remap eval-expression] #'inspector-eval-expression)
+;;     and then use C-u C-x C-e and C-u M-: as alternatives to
+;;     `eval-last-sexp' and `eval-expression'.
+;;
 ;; Inside the inspector:
 ;;
 ;;     M-x `inspector-pop' bound to letter l, to navigate to previous object.
@@ -792,6 +798,15 @@ is expected to be used.")
 
   (inspector-inspect (eval exp t)))
 
+;;;###autoload
+(defun inspector-eval-expression (arg)
+  "Like `eval-expression', but also inspect when called with prefix ARG."
+  (interactive "P")
+  (pcase arg
+    ('(4) (let ((current-prefix-arg nil))
+	    (call-interactively #'inspector-inspect-expression)))
+    (_ (call-interactively #'eval-expression))))
+
 (defun inspector--basic-inspect (object)
   "Create and prepare a new buffer for inspecting OBJECT."
   (defvar *)
@@ -853,6 +868,14 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   (interactive)
   (let ((result (eval (eval-sexp-add-defvars (elisp--preceding-sexp)) lexical-binding)))
     (inspector-inspect result)))
+
+;;;###autoload
+(defun inspector-eval-last-sexp (arg)
+  "Like `eval-last-sexp', but also inspect when called with prefix ARG."
+  (interactive "P")
+  (pcase arg
+    ('(4) (inspector-inspect-last-sexp))
+    (_ (call-interactively #'eval-last-sexp))))
 
 (defun inspector--elisp-defun-at-point ()
   "Return the name of the function at point."
