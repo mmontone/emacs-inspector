@@ -23,6 +23,16 @@ This package is available from ELPA.
 * `M-x inspector-inspect-expression` to evaluate an elisp expression and inspect the result.
 * `M-x inspector-inspect-last-sexp` to evaluate last sexp in current buffer and inspect the result.
 
+ Or add the following to your config:
+
+```lisp
+(define-key global-map [remap eval-last-sexp] #'inspector-eval-last-sexp)
+(define-key global-map [remap eval-expression] #'inspector-eval-expression)
+```
+
+and then use `C-u C-x C-e` and `C-u M-:` as alternatives to
+`eval-last-sexp` and `eval-expression`.
+
 ### Inside the inspector
 
 * `M-x inspector-pop` bound to letter `l`, to navigate to previous object.
