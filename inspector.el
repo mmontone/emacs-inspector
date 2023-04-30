@@ -738,9 +738,10 @@ is expected to be used.")
   (inspector--insert-title (inspector--princ-to-string (type-of integer)))
   (inspector--insert-label "integer")
   (insert (inspector--princ-to-string integer))
-  (newline)
-  (inspector--insert-label "character")
-  (insert (inspector--princ-to-string (char-to-string integer))))
+  (when (<= 0 integer)
+    (newline)
+    (inspector--insert-label "character")
+    (insert (inspector--princ-to-string (char-to-string integer)))))
 
 (cl-defmethod inspector-inspect-object ((hash-table hash-table))
   "Render inspector buffer for HASH-TABLEs."
