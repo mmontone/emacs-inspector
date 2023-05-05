@@ -53,6 +53,38 @@ Works together with the "normal" inspector when it is loaded; when an object lab
 
 Then start the inspector with either `M-x tree-inspector-inspect-expression` or `M-x tree-inspector-inspect-last-sexp`.
 
+### Setup evaluation commands using prefix arguments
+
+Instead of bothering setting up different key bindings for elisp evaluation and inspection, it can be handy to have both in the same command, and use prefix arguments to differenciate, like this:
+
+```emacs-lisp
+
+;;;###autoload
+(defun inspector-eval-expression (arg)
+  "Like `eval-expression', but also inspect when called with prefix ARG."
+  (interactive "P")
+  (pcase arg
+    ('(4) (let ((current-prefix-arg nil))
+	    (call-interactively #'inspector-inspect-expression)))
+    (_ (call-interactively #'eval-expression))))
+	
+;;;###autoload
+(defun inspector-eval-last-sexp (arg)
+  "Like `eval-last-sexp', but also inspect when called with prefix ARG."
+  (interactive "P")
+  (pcase arg
+    ('(4) (inspector-inspect-last-sexp))
+    (_ (call-interactively #'eval-last-sexp))))
+```
+
+Setup key bindings:
+
+```emacs-lisp
+(define-key global-map [remap eval-last-sexp] #'inspector-eval-last-sexp)
+(define-key global-map [remap eval-expression] #'inspector-eval-expression)
+```
+and then use `C-u C-x C-e` and `C-u M-:` as alternatives to `eval-last-sexp` and `eval-expression`.
+
 ### For `evil/vim` user
 
 - Add this to your config file
