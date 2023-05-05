@@ -58,8 +58,6 @@ Then start the inspector with either `M-x tree-inspector-inspect-expression` or 
 Instead of bothering setting up different key bindings for elisp evaluation and inspection, it can be handy to have both in the same command, and use prefix arguments to differenciate, like this:
 
 ```emacs-lisp
-
-;;;###autoload
 (defun inspect-or-eval-expression (arg)
   "Like `eval-expression', but also inspect when called with prefix ARG."
   (interactive "P")
@@ -68,7 +66,6 @@ Instead of bothering setting up different key bindings for elisp evaluation and 
 	    (call-interactively #'inspector-inspect-expression)))
     (_ (call-interactively #'eval-expression))))
 	
-;;;###autoload
 (defun inspect-or-eval-last-sexp (arg)
   "Like `eval-last-sexp', but also inspect when called with prefix ARG."
   (interactive "P")
