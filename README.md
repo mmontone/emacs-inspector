@@ -60,7 +60,7 @@ Instead of bothering setting up different key bindings for elisp evaluation and 
 ```emacs-lisp
 
 ;;;###autoload
-(defun inspector-eval-expression (arg)
+(defun inspect-or-eval-expression (arg)
   "Like `eval-expression', but also inspect when called with prefix ARG."
   (interactive "P")
   (pcase arg
@@ -69,7 +69,7 @@ Instead of bothering setting up different key bindings for elisp evaluation and 
     (_ (call-interactively #'eval-expression))))
 	
 ;;;###autoload
-(defun inspector-eval-last-sexp (arg)
+(defun inspect-or-eval-last-sexp (arg)
   "Like `eval-last-sexp', but also inspect when called with prefix ARG."
   (interactive "P")
   (pcase arg
@@ -80,8 +80,8 @@ Instead of bothering setting up different key bindings for elisp evaluation and 
 Setup key bindings:
 
 ```emacs-lisp
-(define-key global-map [remap eval-last-sexp] #'inspector-eval-last-sexp)
-(define-key global-map [remap eval-expression] #'inspector-eval-expression)
+(define-key global-map [remap eval-last-sexp] #'inspect-or-eval-last-sexp)
+(define-key global-map [remap eval-expression] #'inspect-or-eval-expression)
 ```
 and then use `C-u C-x C-e` and `C-u M-:` as alternatives to `eval-last-sexp` and `eval-expression`.
 
