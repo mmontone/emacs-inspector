@@ -243,13 +243,14 @@ LIMIT controls the truncation."
     (put-text-property (point-min) (point) 'inspector-form (gensym))
     ;; Make buttons from all the "..."s.  Since there might be many of
     ;; them, use text property buttons.
-    (goto-char (point-min))
-    (while (< (point) (point-max))
-      (let ((end (next-single-property-change (point) 'cl-print-ellipsis
-                                              nil (point-max))))
-        (when (get-text-property (point) 'cl-print-ellipsis)
-          (make-text-button (point) end :type 'backtrace-ellipsis))
-        (goto-char end)))
+    (unless (boundp 'cl-print-expand-ellipsis-function) ;Emacs-30
+      (goto-char (point-min))
+      (while (< (point) (point-max))
+        (let ((end (next-single-property-change (point) 'cl-print-ellipsis
+                                                nil (point-max))))
+          (when (get-text-property (point) 'cl-print-ellipsis)
+            (make-text-button (point) end :type 'backtrace-ellipsis))
+          (goto-char end))))
     (buffer-string)))
 
 (cl-defgeneric inspector--face-for-object (object)
