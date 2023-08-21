@@ -894,8 +894,10 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
     (with-current-buffer-window "*inspector pprint*"
         nil nil
       (emacs-lisp-mode)
+      ;; local-set-key modifies the mode map of the entire buffer's major mode (emacs-lisp-mode-map).
+      ;; to modify the map for this buffer only, we need to use a copy of the mode-map:
+      (use-local-map (copy-keymap emacs-lisp-mode-map))
       (local-set-key "q" #'kill-this-buffer)
-
       (let ((pp-use-max-width inspector-pp-use-max-width)
             (pp-max-width inspector-pp-max-width))
         (ignore pp-use-max-width pp-max-width)
