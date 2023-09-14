@@ -780,7 +780,7 @@ is expected to be used.")
                       buf))))
     (with-current-buffer buffer
       (add-hook 'xref-backend-functions 'elisp--xref-backend 0 'local)
-      (setq revert-buffer-function #'inspector--revert-buffer)
+      (setq-local revert-buffer-function #'inspector--revert-buffer)
       (setq buffer-read-only nil)
       (erase-buffer))
     buffer))
