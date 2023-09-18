@@ -60,7 +60,8 @@
 (defun inspector--princ-to-string (object)
   "Print OBJECT to string using `princ'."
   (with-output-to-string
-    (princ object)))
+    (let ((print-circle t))
+      (princ object))))
 
 (defun inspector--plistp (list)
   "Return T if LIST is a property list."
