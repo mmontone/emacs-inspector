@@ -5,7 +5,7 @@
 ;; Author: Mariano Montone <marianomontone@gmail.com>
 ;; URL: https://github.com/mmontone/emacs-inspector
 ;; Keywords: debugging, tool, lisp, development
-;; Version: 0.35
+;; Version: 0.36
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -234,25 +234,38 @@ The target width is given by the `pp-max-width' variable."
       (cl-print-object (substring-no-properties thing) stream)
     (cl-print-object thing stream)))
 
+(defvar inspector--temp-buffer nil
+  "Variable with the current temporal buffer.
+Used as an optimization for printing objects.
+See: `inspector--with-inspector-temp-buffer'.")
+
+(defun inspector--get-inspector-temp-buffer ()
+  "Return a (cached) inspector temporary buffer."
+  (or inspector--temp-buffer
+      (setq inspector--temp-buffer
+            (get-buffer-create "*inspector-temp*"))))
+
 (defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
 LIMIT controls the truncation."
   (setq limit (or limit inspector-truncation-limit))
-  (with-temp-buffer
-    (insert (cl-print-to-string-with-limit #'inspector--prin1 object limit))
-    ;; Add a unique inspector-form property.
-    (put-text-property (point-min) (point) 'inspector-form (gensym))
-    ;; Make buttons from all the "..."s.  Since there might be many of
-    ;; them, use text property buttons.
-    (unless (boundp 'cl-print-expand-ellipsis-function) ;Emacs-30
-      (goto-char (point-min))
-      (while (< (point) (point-max))
-        (let ((end (next-single-property-change (point) 'cl-print-ellipsis
-                                                nil (point-max))))
-          (when (get-text-property (point) 'cl-print-ellipsis)
-            (make-text-button (point) end :type 'backtrace-ellipsis))
-          (goto-char end))))
-    (buffer-string)))
+  (let ((temp-buffer (inspector--get-inspector-temp-buffer)))
+    (with-current-buffer temp-buffer
+      (erase-buffer)
+      (insert (cl-print-to-string-with-limit #'inspector--prin1 object limit))
+      ;; Add a unique inspector-form property.
+      (put-text-property (point-min) (point) 'inspector-form (gensym))
+      ;; Make buttons from all the "..."s.  Since there might be many of
+      ;; them, use text property buttons.
+      (unless (boundp 'cl-print-expand-ellipsis-function) ;Emacs-30
+        (goto-char (point-min))
+        (while (< (point) (point-max))
+          (let ((end (next-single-property-change (point) 'cl-print-ellipsis
+                                                  nil (point-max))))
+            (when (get-text-property (point) 'cl-print-ellipsis)
+              (make-text-button (point) end :type 'backtrace-ellipsis))
+            (goto-char end))))
+      (buffer-string))))
 
 (cl-defgeneric inspector--face-for-object (object)
   "Return face to use for OBJECT.")
@@ -838,6 +851,9 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
   "Quit the Emacs inspector."
   (interactive)
   (setq inspector-history nil)
+  (when inspector--temp-buffer
+    (kill-buffer inspector--temp-buffer)
+    (setq inspector--temp-buffer nil))
   (if (window-prev-buffers)
       (quit-window)
     (delete-window))
