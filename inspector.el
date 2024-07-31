@@ -241,9 +241,10 @@ See: `inspector--with-inspector-temp-buffer'.")
 
 (defun inspector--get-inspector-temp-buffer ()
   "Return a (cached) inspector temporary buffer."
-  (or inspector--temp-buffer
-      (setq inspector--temp-buffer
-            (get-buffer-create "*inspector-temp*"))))
+  (unless (buffer-live-p inspector--temp-buffer)
+    (setq inspector--temp-buffer
+          (get-buffer-create "*inspector-temp*")))
+  inspector--temp-buffer)
 
 (defun inspector--print-truncated (object &optional limit)
   "Print OBJECT to a string, truncated.
