@@ -192,6 +192,11 @@ The target width is given by the `pp-max-width' variable."
   :type 'boolean
   :group 'inspector)
 
+(defcustom inspector-switch-to-buffer t
+  "Use `switch-to-buffer-other-window' after an inspector buffer is opened."
+  :type 'boolean
+  :group 'inspector)
+
 (define-button-type 'inspector-button
   'follow-link t
   'face 'inspector-button-face
@@ -827,7 +832,10 @@ is expected to be used.")
 When PRESERVE-HISTORY is T, inspector history is not cleared."
   (let ((current-inspected-object inspector-inspected-object)
         (buffer (inspector--basic-inspect object)))
-    (when (not preserve-history) (switch-to-buffer-other-window buffer))
+    (when (not preserve-history)
+      (if inspector-switch-to-buffer
+          (switch-to-buffer-other-window buffer)
+        (display-buffer buffer)))
     (with-current-buffer buffer
       (unless preserve-history
         (setq inspector-history nil))
@@ -921,7 +929,9 @@ When PRESERVE-HISTORY is T, inspector history is not cleared."
         (ignore pp-use-max-width pp-max-width)
         (pp object)
         ;; Jump to this buffer
-        (switch-to-buffer-other-window "*inspector pprint*")))))
+        (if inspector-switch-to-buffer
+            (switch-to-buffer-other-window "*inspector pprint*")
+          (display-buffer "*inspector pprint*"))))))
 
 ;;-- Inspection from Emacs debugger
 
