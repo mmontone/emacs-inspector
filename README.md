@@ -24,6 +24,7 @@ This package is available from ELPA.
 
 * `M-x inspector-inspect-expression` to evaluate an elisp expression and inspect the result.
 * `M-x inspector-inspect-last-sexp` to evaluate last sexp in current buffer and inspect the result.
+* `M-x inspector-inspect-defun` to evaluate the top-level defun at point at inspect the result.
 
 ### Inside the inspector
 
