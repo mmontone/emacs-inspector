@@ -193,7 +193,10 @@ The target width is given by the `pp-max-width' variable."
   :group 'inspector)
 
 (defcustom inspector-switch-to-buffer t
-  "Use `switch-to-buffer-other-window' after an inspector buffer is opened."
+  "Use `switch-to-buffer-other-window' after an inspector buffer is opened.
+Otherwise, when nil, use `display-buffer' to display inspector buffers.
+
+This option applies to *inspector* and *inspector pprint* buffers."
   :type 'boolean
   :group 'inspector)
 
