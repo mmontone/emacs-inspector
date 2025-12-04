@@ -47,6 +47,12 @@
 ;; When on an Emacs debugging backtrace, press letter i to inspect the pointed frame and its local variables.
 ;;
 ;; When on edebug-mode, use C-c C-i for inspecting expressions in the debugger.
+;;
+;; From *Help* buffers:
+;;
+;; When in a *Help* buffer, such as the ones created from `describe-function', `describe-variable',
+;; `describe-keymap', and `describe-symbol', you can use M-x `inspector-inspect-help-buffer-expression'
+;; to inspect the symbol associated with that Help buffer.
 
 ;;; Code:
 
@@ -1013,6 +1019,16 @@ The environment used is the one when entering the activation frame at point."
 
 ;; Press 'C-c C-i' to inspect expression in edebug-mode
 (define-key edebug-mode-map (kbd "C-c C-i") #'inspector-inspect-edebug-expression)
+
+;; ----- help-mode---------------------------------------
+
+;;;###autoload
+(defun inspector-inspect-help-buffer-expression ()
+  "Inspect the current *Help* buffer\\='s symbol."
+  (interactive)
+  (if-let* ((expr (plist-get help-mode--current-data :symbol)))
+      (inspector-inspect (eval expr t))
+    (message "No symbol to inspect in Help buffer")))
 
 ;;--------- Inspector mode ---------------------------------
 
