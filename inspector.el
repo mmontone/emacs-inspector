@@ -928,7 +928,7 @@ This has a similar purpose to \\[eval-defun]."
       ;; local-set-key modifies the mode map of the entire buffer's major mode (emacs-lisp-mode-map).
       ;; to modify the map for this buffer only, we need to use a copy of the mode-map:
       (use-local-map (copy-keymap emacs-lisp-mode-map))
-      (local-set-key "q" #'kill-this-buffer)
+      (local-set-key "q" #'kill-current-buffer)
       (let ((pp-use-max-width inspector-pp-use-max-width)
             (pp-max-width inspector-pp-max-width))
         (ignore pp-use-max-width pp-max-width)
@@ -1022,9 +1022,13 @@ The environment used is the one when entering the activation frame at point."
     (define-key map "l" #'inspector-pop)
     (define-key map "e" #'eval-expression)
     (define-key map "n" #'forward-button)
+    (define-key map (kbd "<tab>") #'forward-button)
     (define-key map "p" #'backward-button)
+    (define-key map (kbd "<backtab>") #'backward-button)
     (define-key map "P" #'inspector-pprint-inspected-object)
     (define-key map "g" #'inspector-refresh)
+    (define-key map (kbd "SPC") #'scroll-up-command)
+    (define-key map (kbd "DEL") #'scroll-down-command)
     map))
 
 (easy-menu-define
