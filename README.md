@@ -41,6 +41,10 @@ When on an Emacs debugging backtrace, press letter `i` to inspect the pointed fr
 
 When on edebug-mode, use `C-c C-i` for inspecting expressions in the debugger.
 
+### From Help buffers
+
+When in a *Help* buffer, such as the ones created from `describe-function`, `describe-variable`, `describe-keymap`, and `describe-symbol`, you can use M-x `inspector-inspect-help-buffer-expression` to inspect the symbol associated with that Help buffer.
+
 ### Setup evaluation commands using prefix arguments
 
 Instead of bothering setting up different key bindings for elisp evaluation and inspection, it can be handy to have both in the same command, and use prefix arguments to differenciate, like this:
