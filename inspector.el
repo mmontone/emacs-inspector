@@ -1020,6 +1020,8 @@ The environment used is the one when entering the activation frame at point."
     (define-key map "p" #'backward-button)
     (define-key map "P" #'inspector-pprint-inspected-object)
     (define-key map "g" #'inspector-refresh)
+    (define-key map (kbd "SPC") #'scroll-up-command)
+    (define-key map (kbd "DEL") #'scroll-down-command)
     map))
 
 (easy-menu-define
