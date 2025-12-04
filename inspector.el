@@ -54,6 +54,7 @@
 (require 'edebug)
 (require 'backtrace)
 (require 'pp)
+(require 'subr-x)
 
 ;;---- Utils ----------
 
